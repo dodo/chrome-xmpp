@@ -1,0 +1,13 @@
+{"name": "XMPP",
+ "description": "The missing XMPP Gear for Browsers",
+ "version": "0.0.0",
+
+ "app": {
+   "background": {
+      "scripts": ["background.js", "node_modules/sawrocket-xmpp/sawrocket-xmpp.browser.js"],
+      "persistent": true
+   }
+ },
+ "permissions": [ "notifications", {"socket": ["tcp-connect"]} ],
+ "icons": { "16": "favicon.png",  "64": "icon.png" }
+}

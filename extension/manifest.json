@@ -1,0 +1,30 @@
+{"name": "XMPP",
+ "description": "The missing XMPP Gear for Browsers",
+ "version": "0.0.0",
+
+ "manifest_version": 2,
+ "permissions": ["management", "infobars"],
+ "options_page": "options.html",
+ "icons": {
+   "16": "favicon.png",
+   "64": "icon.png"
+ },
+ "browser_action": {
+   "default_icon": "icon.png",
+   "default_popup": "popup.html"
+ },
+  "background" : {
+    "scripts": ["background.js"]
+ },
+ "web_accessible_resources": [
+   "injectxmpp.js"
+ ],
+ "content_scripts" : [
+    {
+      "matches": [ "*://*/*" ],
+      "js": [ "contentscript.js" ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ]
+}
