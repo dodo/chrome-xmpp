@@ -6,6 +6,6 @@
   "author": "",
   "license": "GPL",
   "dependencies": {
-    "sawrocket-xmpp": ">= 0.0.0"
+    "sawrocket-xmpp": "~0.1.0"
   }
 }

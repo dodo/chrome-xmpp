@@ -4,7 +4,7 @@
 
  "app": {
    "background": {
-      "scripts": ["background.js", "node_modules/sawrocket-xmpp/sawrocket-xmpp.browser.js"],
+      "scripts": ["background.js", "sawrocket-xmpp.browser.js"],
       "persistent": true
    }
  },
