@@ -1,3 +1,5 @@
+var Client = require('./pool').Client;
+var pool = require('./pool').pool;
 var actions = {};
 
 chrome.app.runtime.onLaunched.addListener(function() {
@@ -23,8 +25,21 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     });
 });
 
+//------------------------------------------------------------------------------
 
+actions.attach = function (opts) {
+    opts.port = this;
+    if (pool[opts.jid]) {
+        pool[opts.jid].attach(opts);
+        // TODO update new extension-client with current state (connected|offline|online|etc)
+    } else {
+        pool[opts.jid] = new Client(opts);
+    }
+};
 
-actions.login = function (data) {
-    console.log("try to login into", data.jid);
+actions.detach = function (opts) {
+    opts.port = this;
+    if (pool[opts.jid]) {
+        pool[opts.jid].detach(opts);
+    }
 };
