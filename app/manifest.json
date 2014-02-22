@@ -4,10 +4,10 @@
 
  "app": {
    "background": {
-      "scripts": ["background.js", "sawrocket-xmpp.browser.js"],
+      "scripts": ["background.js"],
       "persistent": true
    }
  },
- "permissions": [ "notifications", {"socket": ["tcp-connect"]} ],
+ "permissions": [ "notifications", {"socket": ["tcp-connect:*"]} ],
  "icons": { "16": "favicon.png",  "64": "icon.png" }
 }

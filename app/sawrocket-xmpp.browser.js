@@ -1,1 +1,0 @@
-node_modules/sawrocket-xmpp/sawrocket-xmpp.browser.js
