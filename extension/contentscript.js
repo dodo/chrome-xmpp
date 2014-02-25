@@ -1,3 +1,4 @@
+var NS = 'chrome-xmpp';
 var pool = {};
 
 var script = document.createElement('script');
@@ -14,43 +15,34 @@ window.addEventListener('message', function (ev) {
     if (!ev.data.id) return;
     var id = ev.data.id;
     if (ev.data.action === 'init') {
-        if (!pool[id])
-             pool[id] = new Client(id);
-    } else { // routing
-        if (!pool[id]) return;
-        if (!pool[id][ev.data.action]) return;
-
-        return pool[id][ev.data.action].apply(pool[id], ev.data.args || {});
+        // pipe all events througth from message port to window in both directions
+        fullduplexPipe(id, window, chrome.runtime.connect({name:id}));
     }
 });
 
+// helper functions
 
-//------------------------------------------------------------------------------
-
-
-function Client(id) {
-    this.id = id;
-    this.port = chrome.runtime.connect({name:id});
-    this.port.onMessage.addListener(this.messageListener.bind(this));
-    this.port.onDisconnect.addListener(function () {
-        delete pool[id];
-    });
+function fullduplexPipe(id, source, target, origin) {
+    origin = origin || '*';
+    pass(id, source, target, origin);
+    pass(id, target, source, origin);
 }
 
-Client.prototype.connect = function connect() {
-    this.port.postMessage({request:'permission'});
+function pass(id, source, target, origin) {
+    if (source.addEventListener) {
+        source.addEventListener('message', function (ev) {
+            if (validate(ev.data, id))
+                target.postMessage(ev.data, origin);
+        });
+    } else {
+        source.onMessage.addListener(function (ev) {
+            if (validate(ev, id))
+                target.postMessage(ev);
+        });
+    }
 };
 
-Client.prototype.end = function end() {
-    this.port.postMessage({request:'detach'});
-};
-
-Client.prototype.messageListener = function messageListener(msg) {
-    window.postMessage({
-        method:msg.method,
-        args:msg.args,
-        type:'xmpp',
-        id:this.id,
-    }, '*');
-};
+function validate(ev, id) {
+    return (ev && ev.ns === NS && ev.id === id);
+}
 

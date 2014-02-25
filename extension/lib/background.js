@@ -7,6 +7,8 @@ var CONFIG = {
 };
 
 //------------------------------------------------------------------------------
+var util = require('util');
+var Connection = require('./connection').Connection;
 
 var bgapp, bgappid, actions = {}, pool = {};
 chrome.management.getAll(function (apps) {
@@ -38,6 +40,7 @@ chrome.management.getAll(function (apps) {
     };
 });
 
+// for infobar
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
     var action = function () {return {error:request.type + " not an action"}};
     if (actions[request.type])
@@ -76,60 +79,32 @@ actions.deny = function (request, sender) {
 //------------------------------------------------------------------------------
 
 function Client(port) {
-    this.port = port;
-    this.id = port.name;
-
-    this.port.onMessage.addListener(this.messageListener.bind(this));
+    Connection.call(this, {
+        target:bgapp,
+        id:port.name,
+    }).listen(port);
+    this.on('request permission', this.request_permission.bind(this));
 }
+util.inherits(Client, Connection);
 
 Client.prototype.allow = function allow() {
-    this.port.postMessage({method:'onevent', args:['allowed']})
-    this.attach()
+    this.sendToTarget('allow', 'allowed');
+    this.attach();
 };
 
 Client.prototype.deny = function deny() {
-    this.port.postMessage({method:'onerror', args:['access denied']})
+    this.sendToTarget('error', 'access denied');
 };
 
 Client.prototype.attach = function attach() {
     var passwd = localStorage['pw'];
     this.jid = localStorage['jid'];
-    bgapp.postMessage({
-        action: 'attach',
+    this.send('attach', {
         jid:this.jid,
-        id: this.id,
         pw: passwd,
         params:PARAMS,
         cfg:CONFIG,
     });
-};
-
-Client.prototype.onevent = function (ev) {
-    this.port.postMessage({method:'onevent', args:ev.args});
-};
-
-Client.prototype.messageListener = function messageListener(msg) {
-    if (!msg) return;
-    if (!msg.request) return;
-    if (!this['request_' + msg.request]) return;
-
-    this['request_' + msg.request].call(this, msg);
-};
-
-Client.prototype.request_permission = function request_permission() {
-    chrome.infobars.show({
-        path: "infobar.html#"+this.id,
-        tabId: this.port.sender.tab.id,
-    });
-};
-
-Client.prototype.request_detach = function request_detach() {
-    bgapp.postMessage({
-        action: 'detach',
-        jid:this.jid,
-        id: this.id,
-    });
-
 };
 
 
