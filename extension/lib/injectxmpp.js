@@ -1,5 +1,5 @@
 var util = require('util');
-var Connection = require('./connection').Connection;
+var Connection = require('../../lib/connection');
 var NS = Connection.NS;
 
 

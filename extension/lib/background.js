@@ -8,7 +8,7 @@ var CONFIG = {
 
 //------------------------------------------------------------------------------
 var util = require('util');
-var Connection = require('./connection').Connection;
+var Connection = require('../../lib/connection');
 
 var bgapp, bgappid, actions = {}, pool = {};
 chrome.management.getAll(function (apps) {
