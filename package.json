@@ -4,8 +4,10 @@
   "description": "xmpp connection on chrome sockets",
   "main": "",
   "author": "",
-  "license": "GPL",
+  "license": "AGPL",
   "dependencies": {
+    "node-xmpp-core": "*",
+    "node-xmpp-client": "*",
     "sawrocket-xmpp": "~0.2.0",
     "lightstream": "git+https://github.com/dodo/lightstream.git"
   },

@@ -1,3 +1,10 @@
+/*
+ * This script greps for background app,
+ * starts infobar on connection apptempt from tab,
+ * handles account configs,
+ * …
+ */
+
 // FIXME
 var CONFIG = {
     plugins:['Disco', 'Presence', 'Ping'],
@@ -23,17 +30,13 @@ chrome.management.getAll(function (apps) {
             // autostart
             chrome.management.launchApp(bgappid, function () {
 
-                bgapp = chrome.runtime.connect(bgappid);
-
-                bgapp.onMessage.addListener(function (msg) {
-                    if (!msg) return;
-                    if (!msg.id) return;
-                    if (!msg.action) return;
-                    if (!pool[msg.id]) return;
-                    if (!pool[msg.id][msg.action]) return;
-
-                    pool[msg.id][msg.action].call(pool[msg.id], msg);
-                });
+                bgapp = new Connection();
+                bgapp.id = null; // allow all ids
+                bgapp.on('error', console.error.bind(console));
+                bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
+//                 bgapp.on('foobar', function (foo, bar) {
+//                    console.log(foo, bar);
+//                 });
             });
         }
 
@@ -49,18 +52,21 @@ chrome.extension.onRequest.addListener(function (request, sender, sendResponse) 
 });
 
 chrome.runtime.onConnect.addListener(function (port) {
-    console.assert(port.name);
-    pool[port.name] = new Client(port);
+    var client = new Client(port);
+    pool[client.id] = client;
     port.onDisconnect.addListener(function () {
-        delete pool[port.name];
-    })
+        client.removeAllListeners();
+        delete pool[client.id];
+    });
 });
 
 function getAppID() {
     return bgappid;
 }
 
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+ * infobar callbacks
+ */
 
 actions.allow = function (request, sender) {
     if (!request.id) return;
@@ -78,14 +84,32 @@ actions.deny = function (request, sender) {
 
 //------------------------------------------------------------------------------
 
+Client.EVENTS = ['call','listen'];
+
+util.inherits(Client, Connection);
 function Client(port) {
     Connection.call(this, {
-        target:bgapp,
+        target:bgapp.source,
         id:port.name,
     }).listen(port);
-    this.on('request permission', this.request_permission.bind(this));
+    port.name = this.id;
+    this.setupListeners();
 }
-util.inherits(Client, Connection);
+
+Client.prototype.setupListeners = function setupListeners() {
+    this.on('request permission', this.request_permission.bind(this));
+    this.on('end', this.detach.bind(this));
+    // proxy in both directions
+    bgapp.on('proxy', this._onproxy = this.sendToTarget.bind(this));
+    Client.EVENTS.forEach(function (event) {
+        this.on(event, this.send.bind(this, event));
+    }.bind(this));
+};
+
+Client.prototype.removeAllListeners = function removeAllListeners() {
+    Connection.prototype.removeAllListeners.apply(this,[].slice.call(arguments));
+    bgapp.removeListener('proxy', this._onproxy);
+};
 
 Client.prototype.allow = function allow() {
     this.sendToTarget('allow', 'allowed');
@@ -101,9 +125,21 @@ Client.prototype.attach = function attach() {
     this.jid = localStorage['jid'];
     this.send('attach', {
         jid:this.jid,
-        pw: passwd,
+        // in case a new account is created:
+        password: passwd,
         params:PARAMS,
         cfg:CONFIG,
+    });
+};
+
+Client.prototype.detach = function detach() {
+    this.send('detach', {jid:this.jid});
+}
+
+Client.prototype.request_permission = function request_permission() {
+    chrome.infobars.show({
+        path: "infobar.html#"+this.id,
+        tabId: this.source.sender.tab.id,
     });
 };
 

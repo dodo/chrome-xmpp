@@ -1,6 +1,9 @@
-var Client = require('./pool').Client;
-var pool = require('./pool').pool;
-var actions = {};
+/*
+ * This script starts a pool client for each extension connection.
+ */
+var Client = require('./pool');
+var accounts = {};
+var pool = {}; // of each extension connection
 
 chrome.app.runtime.onLaunched.addListener(function() {
 
@@ -15,31 +18,12 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 });
 
-chrome.runtime.onConnectExternal.addListener(function (port) {
-    port.onMessage.addListener(function (message) {
-        if (!message.action) return;
-        if (!actions[message.action]) return;
 
-        return actions[message.action].call(port, message);
-        // return true; // send a response asynchronously
+chrome.runtime.onConnectExternal.addListener(function (port) {
+    var client = new Client(port, accounts);
+    pool[client.id] = client;
+    port.onDisconnect.addListener(function () {
+        client.removeAllListeners();
+        delete pool[client.id];
     });
 });
-
-//------------------------------------------------------------------------------
-
-actions.attach = function (opts) {
-    opts.port = this;
-    if (pool[opts.jid]) {
-        pool[opts.jid].attach(opts);
-        // TODO update new extension-client with current state (connected|offline|online|etc)
-    } else {
-        pool[opts.jid] = new Client(opts);
-    }
-};
-
-actions.detach = function (opts) {
-    opts.port = this;
-    if (pool[opts.jid]) {
-        pool[opts.jid].detach(opts);
-    }
-};

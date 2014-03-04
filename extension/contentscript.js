@@ -1,3 +1,8 @@
+/*
+ * This script just pipes events from a (injectxmpp) connection
+ * fron tab.window to a chrome message port on the background page.
+ */
+
 var NS = 'chrome-xmpp';
 var pool = {};
 
@@ -10,11 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 window.addEventListener('message', function (ev) {
     if (ev.source !== window) return;
-    if (ev.data.type !== 'xmpp') return;
-    if (!ev.data.action) return;
-    if (!ev.data.id) return;
-    var id = ev.data.id;
-    if (ev.data.action === 'init') {
+    var id = ev && ev.data && ev.data.type == 'xmpp' && ev.data.id;
+    if (id && ev.data.action === 'init') {
         // pipe all events througth from message port to window in both directions
         fullduplexPipe(id, window, chrome.runtime.connect({name:id}));
     }
@@ -31,18 +33,22 @@ function fullduplexPipe(id, source, target, origin) {
 function pass(id, source, target, origin) {
     if (source.addEventListener) {
         source.addEventListener('message', function (ev) {
-            if (validate(ev.data, id))
-                target.postMessage(ev.data, origin);
+            if (validate(ev.data, id)) {
+                ev.data._proxied = true;
+                target.postMessage(ev.data);
+            }
         });
     } else {
         source.onMessage.addListener(function (ev) {
-            if (validate(ev, id))
-                target.postMessage(ev);
+            if (validate(ev, id)) {
+                ev._proxied = true;
+                target.postMessage(ev, origin);
+            }
         });
     }
-};
+}
 
 function validate(ev, id) {
-    return (ev && ev.ns === NS && ev.id === id);
+    return (ev && ev.ns === NS && ev.id === id && !ev._proxied);
 }
 

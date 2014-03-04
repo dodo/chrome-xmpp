@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     chrome.runtime.getBackgroundPage(function (bg) {
-        var appid = bg.getAppID();
+        var appid = bg && bg.getAppID();
         if (appid) {
             document.body.textContent = localStorage['jid'];
 
