@@ -12,13 +12,17 @@ function xep(name) {return XEP[name]}
 
 module.exports = Client;
 function Client(opts) {
+    var that = this;
     this.stayAlive = opts.cfg.stayAlive;
     this.jid = opts.jid;
     this.ids = {};
     this.attach(opts);
+    this.connected = false;
     var fd = this.fd = new Lightstream({
         backend:require('lightstream/backend/node-xmpp'),
     }).use(opts.cfg.plugins.filter(xep).map(xep));
+    fd.on( 'online', function () {that.connected = true });
+    fd.on('offline', function () {that.connected = false});
     process.nextTick(function () {
         fd.connect(opts.jid, opts.password, opts.params);
     });
@@ -74,6 +78,10 @@ Client.prototype.attach = function attach(opts) {
 //             that.emit.apply(that, args);
 //         });
 //     });
+    if (this.connected) process.nextTick(function () {
+        conn.send('online');
+    });
+
 };
 
 Client.prototype.detach = function detach(opts) {
