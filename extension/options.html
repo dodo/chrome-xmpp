@@ -47,72 +47,90 @@
         color: #aaa;
         margin-top: -1em;
     }
+    #status {
+        top: 0;
+        left: 0;
+        position: fixed;
+        width: 100%;
+        padding: 0.2em 1em 0.2em 1em;
+        text-shadow: 0 0 0.2em white;
+        font-size: 2em;
+        font-weight: bolder;
+        color: white;
+    }
+    .online#status {
+        background-color: rgba(0,206,0,0.5);
+    }
+    .offline#status {
+        background-color: rgba(206,0,0,0.5);
+    }
     </style>
 
   </head>
   <body>
+  <header id="status"></header>
 
-  <div class="left account">
+  <div class="disabled left account">
     <header>
       <h1>Jabber ID</h1>
     </header>
 
     <p>
-    <input type="text" id="jid" placeholder="user@domain.tld" title="jid">
+    <input type="text" id="jid" placeholder="user@domain.tld" title="jid" disabled="disabled">
     </p>
 
     <p>
-    <input type="password" id="pw" placeholder="password" title="password">
+    <input type="password" id="pw" placeholder="password" title="password" disabled="disabled">
     </p>
 
     <nav>
-      <button id="save-jid">Save</button>
+      <button id="save-jid" disabled="disabled">Save</button>
       <span id="status-jid"></span>
     </nav>
   </div>
 
-  <div class="right params">
+  <div class="disabled right params">
     <header>
       <h3>Parameter</h3>
     </header>
 
     <p>
-    <input type="text" id="host" placeholder="host" title="server host to connect to" alt=""><strong> : </strong><input type="text" id="port" placeholder="5222" title="server port to connect to" size="5">
+    <input type="text" id="host" placeholder="host" title="server host to connect to" disabled="disabled"><strong> : </strong><input type="text" id="port" placeholder="5222" title="server port to connect to" size="5" disabled="disabled">
     </p>
 
     <p>
-    <input type="text" id="preferred" placeholder="DIGEST-MD5" title="preferred SASL Mechanism">
+    <input type="text" id="preferred" placeholder="DIGEST-MD5" title="preferred SASL Mechanism" disabled="disabled">
     <div class="comment">Available: ANONYMOUS, PLAIN, DIGEST-MD5</div>
     </p>
 
     <p>
-    <label for="reconnect" title="try to reconnect when connection disconnects"><input type="checkbox" id="reconnect"> reconnect</label>
+    <label for="reconnect" title="try to reconnect when connection disconnects"><input type="checkbox" id="reconnect" disabled="disabled"> reconnect</label>
     </p>
 
     <nav>
-      <button id="save-jid-params">Save</button>
+      <button id="save-jid-params" disabled="disabled">Save</button>
       <span id="status-jid-params"></span>
     </nav>
   </div>
 
 
-  <div class="config">
+  <div class="disabled config">
     <header>
       <h1>Settings</h1>
     </header>
 
     <p>
       <h3><i>Extensions</i></h3>
-    <label for="plugin-Presence" title="Presence"><input type="checkbox" class="plugin" id="plugin-Presence"> Presence &nbsp; </label>
-    <label for="plugin-Version" title="Version"><input type="checkbox" class="plugin" id="plugin-Version"> Version &nbsp; </label>
-    <label for="plugin-Disco" title="Discovery"><input type="checkbox" class="plugin" id="plugin-Disco"> Discovery &nbsp; </label>
-    <label for="plugin-pIng" title="Ping"><input type="checkbox" class="plugin" id="plugin-Ping"> Ping &nbsp; </label>
-    <label for="plugin-VCard" title="VCard"><input type="checkbox" class="plugin" id="plugin-VCard"> VCard &nbsp; </label>
-    <label for="plugin-Roster" title="Roster"><input type="checkbox" class="plugin" id="plugin-Roster"> Roster &nbsp; </label>
+    <label for="plugin-Presence" title="Presence"><input type="checkbox" class="plugin" id="plugin-Presence" disabled="disabled"> Presence &nbsp; </label>
+    <label for="plugin-Version" title="Version"><input type="checkbox" class="plugin" id="plugin-Version" disabled="disabled"> Version &nbsp; </label>
+    <label for="plugin-Disco" title="Discovery"><input type="checkbox" class="plugin" id="plugin-Disco" disabled="disabled"> Discovery &nbsp; </label>
+    <label for="plugin-pIng" title="Ping"><input type="checkbox" class="plugin" id="plugin-Ping" disabled="disabled"> Ping &nbsp; </label>
+    <label for="plugin-VCard" title="VCard"><input type="checkbox" class="plugin" id="plugin-VCard" disabled="disabled"> VCard &nbsp; </label>
+    <label for="plugin-Roster" title="Roster"><input type="checkbox" class="plugin" id="plugin-Roster" disabled="disabled"> Roster &nbsp; </label>
     </p>
 
     <nav>
-      <button id="save-config">Save</button>
+      <button id="save-config" disabled="disabled">Save</button>
       <span id="status-config"></span>
     </nav>
   </div>

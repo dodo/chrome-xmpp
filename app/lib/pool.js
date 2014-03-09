@@ -59,6 +59,7 @@ console.warn('postmessage', event, "»", id, args, this.target)
 };
 
 Client.prototype.onAttach = function onAttach(opts) {
+    var that = this;
     var conn = new EventEmitter();
     opts.connection = conn;
     opts.id = this.id;
@@ -70,7 +71,15 @@ Client.prototype.onAttach = function onAttach(opts) {
     if (this.accounts[opts.jid]) {
         this.accounts[opts.jid].attach(opts);
     } else {
+        var updateStatus = function () {
+            that.send(opts.id, 'status', opts.jid, {
+                connected:this.connected,
+            });
+        };
         this.accounts[opts.jid] = new Account(opts);
+        this.accounts[opts.jid].fd
+            .on('offline', updateStatus)
+            .on('online',  updateStatus)
     }
     queue.forEach(function (args) {
         conn.emit.apply(conn, args);

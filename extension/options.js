@@ -1,4 +1,5 @@
 var __slice = Array.prototype.slice;
+var __indexOf = Array.prototype.indexOf;
 
 
 document.addEventListener('DOMContentLoaded', function restore() {
@@ -35,6 +36,18 @@ document.addEventListener('DOMContentLoaded', function restore() {
         });
         localStorage['plugins'] = JSON.stringify(plugins);
     }
+
+    if (localStorage['jid']) {
+        chrome.extension.sendRequest({type:'status', jid:localStorage['jid']}, function (res) {
+            res = res || {connected:false};
+            if (res.error) return console.error(res);
+            var status = document.getElementById('status');
+            status.textContent = res.connected ? "online" : "offline";
+            status.classList.remove(res.connected ? "offline" : "online");
+            status.classList.add(res.connected ? "online" : "offline");
+            if (!res.connected) enableAll();
+        });
+    } else enableAll();
 });
 
 document.getElementById('jid').addEventListener('keyup', function keyup(ev) {
@@ -89,4 +102,14 @@ function notify(id, message) {
     setTimeout(function() {
         status.innerHTML = "";
     }, 750);
+}
+
+function enableAll() {
+    document.getElementById('status').textContent = "offline";
+    __slice.call(document.querySelectorAll('*[disabled]')).forEach(function (el) {
+        el.disabled = false;
+    });
+    __slice.call(document.querySelectorAll('.disabled')).forEach(function (el) {
+        el.classList.remove('disabled');
+    });
 }

@@ -7,7 +7,7 @@
 var util = require('util');
 var Connection = require('../../lib/connection');
 
-var bgapp, bgappid, actions = {}, pool = {};
+var bgapp, bgappid, actions = {}, pool = {}, status = {};
 chrome.management.getAll(function (apps) {
     if(apps.some(function (app) {
         if(app.type !== 'packaged_app') return;
@@ -24,9 +24,9 @@ chrome.management.getAll(function (apps) {
                 bgapp.id = null; // allow all ids
                 bgapp.on('error', console.error.bind(console));
                 bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
-//                 bgapp.on('foobar', function (foo, bar) {
-//                    console.log(foo, bar);
-//                 });
+                bgapp.on('status', function (jid, state) {
+                   status[jid] = state;
+                });
             });
         }
 
@@ -71,6 +71,12 @@ actions.deny = function (request, sender) {
 
     return pool[request.id].deny();
 }
+
+actions.status = function (request, sender) {
+    if (!request.jid) return;
+
+    return status[request.jid] || {connected:false};
+};
 
 //------------------------------------------------------------------------------
 
