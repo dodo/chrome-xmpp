@@ -4,16 +4,6 @@
  * handles account configs,
  * …
  */
-
-// FIXME
-var CONFIG = {
-    plugins:['Disco', 'Presence', 'Ping'],
-}, PARAMS = {
-    host:'127.0.0.1',
-    preferred:'PLAIN',
-};
-
-//------------------------------------------------------------------------------
 var util = require('util');
 var Connection = require('../../lib/connection');
 
@@ -123,12 +113,20 @@ Client.prototype.deny = function deny() {
 Client.prototype.attach = function attach() {
     var passwd = localStorage['pw'];
     this.jid = localStorage['jid'];
+    var params = {};
+    ['host', 'port', 'preferred'].forEach(function (key) {
+        if (localStorage[key])
+            params[key] = localStorage[key];
+    });
+    if (localStorage['reconnect']) params['reconnect'] = true;
     this.send('attach', {
         jid:this.jid,
         // in case a new account is created:
         password: passwd,
-        params:PARAMS,
-        cfg:CONFIG,
+        params: params,
+        cfg:{
+            plugins:JSON.parse(localStorage['plugins'] || '[]'),
+        },
     });
 };
 

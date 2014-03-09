@@ -13,26 +13,109 @@
       padding-bottom: 20px;
       padding-top: 55px;
     }
+    header:before {
+        position: absolute;
+        font-weight: bold;
+        font-size: 10em;
+        color: white;
+        text-shadow: 0 0 1em #ddd;
+        margin-left: -0.45em;
+        margin-top: -0.48em;
+        z-index: -1;
+    }
+    .left {
+        float: left;
+    }
+    .right {
+        margin-left: 20em;
+        margin-bottom: 5em;
+    }
+    .account header:before {
+        content: "℀";
+    }
+    .params header:before {
+        content: "⚙";
+    }
+    .config header:before {
+        content: "⚑";
+    }
+    .disabled {
+        opacity: 0.32;
+    }
+    .comment {
+        font-size: 0.8em;
+        color: #aaa;
+        margin-top: -1em;
+    }
     </style>
 
   </head>
   <body>
+
+  <div class="left account">
     <header>
       <h1>Jabber ID</h1>
     </header>
 
     <p>
-    <input type="text" id="jid" placeholder="user@domain.tld">
+    <input type="text" id="jid" placeholder="user@domain.tld" title="jid">
     </p>
 
     <p>
-    <input type="password" id="pw" placeholder="password">
+    <input type="password" id="pw" placeholder="password" title="password">
     </p>
 
     <nav>
-      <button id="save">Save</button>
-      <span id="status"></span>
+      <button id="save-jid">Save</button>
+      <span id="status-jid"></span>
     </nav>
+  </div>
+
+  <div class="right params">
+    <header>
+      <h3>Parameter</h3>
+    </header>
+
+    <p>
+    <input type="text" id="host" placeholder="host" title="server host to connect to" alt=""><strong> : </strong><input type="text" id="port" placeholder="5222" title="server port to connect to" size="5">
+    </p>
+
+    <p>
+    <input type="text" id="preferred" placeholder="DIGEST-MD5" title="preferred SASL Mechanism">
+    <div class="comment">Available: ANONYMOUS, PLAIN, DIGEST-MD5</div>
+    </p>
+
+    <p>
+    <label for="reconnect" title="try to reconnect when connection disconnects"><input type="checkbox" id="reconnect"> reconnect</label>
+    </p>
+
+    <nav>
+      <button id="save-jid-params">Save</button>
+      <span id="status-jid-params"></span>
+    </nav>
+  </div>
+
+
+  <div class="config">
+    <header>
+      <h1>Settings</h1>
+    </header>
+
+    <p>
+      <h3><i>Extensions</i></h3>
+    <label for="plugin-Presence" title="Presence"><input type="checkbox" class="plugin" id="plugin-Presence"> Presence &nbsp; </label>
+    <label for="plugin-Version" title="Version"><input type="checkbox" class="plugin" id="plugin-Version"> Version &nbsp; </label>
+    <label for="plugin-Disco" title="Discovery"><input type="checkbox" class="plugin" id="plugin-Disco"> Discovery &nbsp; </label>
+    <label for="plugin-pIng" title="Ping"><input type="checkbox" class="plugin" id="plugin-Ping"> Ping &nbsp; </label>
+    <label for="plugin-VCard" title="VCard"><input type="checkbox" class="plugin" id="plugin-VCard"> VCard &nbsp; </label>
+    <label for="plugin-Roster" title="Roster"><input type="checkbox" class="plugin" id="plugin-Roster"> Roster &nbsp; </label>
+    </p>
+
+    <nav>
+      <button id="save-config">Save</button>
+      <span id="status-config"></span>
+    </nav>
+  </div>
 
   </body>
 <script src="options.js"></script>
