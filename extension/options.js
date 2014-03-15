@@ -45,9 +45,8 @@ document.addEventListener('DOMContentLoaded', function restore() {
             res = res || {connected:false};
             if (res.error) return console.error(res);
             updateStatus(res);
-            if (!res.connected) enableAll();
         });
-    } else enableAll();
+    } else updateStatus({connected:false});
     // connect directly to the packaged app
     backport = new BackPort('options')
         .on('status', function (jid, res) {
