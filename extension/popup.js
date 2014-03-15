@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 //     var $ownid = document.createElement('div');
 //     $ownid.textContent = "my id: " + chrome.runtime.id;
 //     document.body.appendChild($ownid);
-    chrome.extension.sendMessage({type:'status',jid:localStorage['jid']},function(res){
+    chrome.extension.sendRequest({type:'status',jid:localStorage['jid']},function(res){
         res = res || {connected:false};
         if (res.error) return document.body.textContent = res.error;
         updateStatus(res);
