@@ -94,7 +94,7 @@ function Client(port) {
 
 Client.prototype.setupListeners = function setupListeners() {
     this.on('request permission', this.request_permission.bind(this));
-    this.on('end', this.detach.bind(this));
+    this.on('disconnect', this.detach.bind(this));
     // proxy in both directions
     bgapp.on('proxy', this._onproxy = this.sendToTarget.bind(this));
     Client.EVENTS.forEach(function (event) {
