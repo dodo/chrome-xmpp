@@ -6,16 +6,30 @@
         min-width: 512px;
         overflow-x: hidden;
       }
-      ul {
-        list-style: none;
-        padding:0;
-        margin:0;
+      .hidden {
+        display: none;
+      }
+      #jid {
+          font-size: 1.1em;
+      }
+      .status {
+        font-weight: bold;
+        font-size: 1.3em;
+        font-family: monospace;
+      }
+      #online {
+        color: rgba(0,206,0,0.5);
+      }
+      #offline {
+        color: rgba(206,0,0,0.5);
       }
     </style>
 
   </head>
   <body>
+    <span id="jid"></span>:&nbsp;<span id="online" class="hidden status">online</span><span id="offline" class="status">offline</span>
   </body>
+  <script src="backport.js"></script>
   <script src="popup.js"></script>
 </html>
 

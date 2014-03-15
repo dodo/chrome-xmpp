@@ -1,26 +1,29 @@
+var backport;
 
 document.addEventListener('DOMContentLoaded', function () {
-
-    var $ownid = document.createElement('div');
-    $ownid.textContent = "my id: " + chrome.runtime.id;
-    document.body.appendChild($ownid);
-
-
-    var $ul = document.createElement('ul');
-    document.body.appendChild($ul);
-
-
-    chrome.runtime.getBackgroundPage(function (bg) {
-        var appid = bg && bg.getAppID();
-        if (appid) {
-            document.body.textContent = localStorage['jid'];
-
-//             chrome.runtime.sendMessage(appid, {action:'get', type:'status'}, function (response) {
-//                 document.body.textContent = response;
-//             });
-
-        } else {
-            document.body.textContent = "XMPP App missing!";
-        };
+//     var $ownid = document.createElement('div');
+//     $ownid.textContent = "my id: " + chrome.runtime.id;
+//     document.body.appendChild($ownid);
+    chrome.extension.sendMessage({type:'status',jid:localStorage['jid']},function(res){
+        res = res || {connected:false};
+        if (res.error) return document.body.textContent = res.error;
+        updateStatus(res);
     });
+    // connect directly to the packaged app
+    backport = new BackPort('popup')
+        .on('status', function (jid, res) {
+            if (jid === localStorage['jid'])
+                updateStatus(res);
+        });
 });
+
+function updateStatus(res) {
+    document.getElementById('jid').textContent = localStorage['jid'];
+    if (res.connected) {
+        document.getElementById('online').classList.remove('hidden');
+        document.getElementById('offline').classList.add('hidden');
+    } else {
+        document.getElementById('online').classList.add('hidden');
+        document.getElementById('offline').classList.remove('hidden');
+    }
+}

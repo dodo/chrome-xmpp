@@ -1,6 +1,6 @@
 var __slice = Array.prototype.slice;
 var __indexOf = Array.prototype.indexOf;
-
+var backport;
 
 document.addEventListener('DOMContentLoaded', function restore() {
     ['jid','pw','host','port','preferred'].forEach(function (id) {
@@ -41,13 +41,16 @@ document.addEventListener('DOMContentLoaded', function restore() {
         chrome.extension.sendRequest({type:'status', jid:localStorage['jid']}, function (res) {
             res = res || {connected:false};
             if (res.error) return console.error(res);
-            var status = document.getElementById('status');
-            status.textContent = res.connected ? "online" : "offline";
-            status.classList.remove(res.connected ? "offline" : "online");
-            status.classList.add(res.connected ? "online" : "offline");
+            updateStatus(res);
             if (!res.connected) enableAll();
         });
     } else enableAll();
+    // connect directly to the packaged app
+    backport = new BackPort('options')
+        .on('status', function (jid, res) {
+            if (jid === localStorage['jid'])
+                updateStatus(res);
+        });
 });
 
 document.getElementById('jid').addEventListener('keyup', function keyup(ev) {
@@ -112,4 +115,24 @@ function enableAll() {
     __slice.call(document.querySelectorAll('.disabled')).forEach(function (el) {
         el.classList.remove('disabled');
     });
+}
+
+function disableAll() {
+    document.getElementById('status').textContent = "online";
+    __slice.call(document.querySelectorAll('input, button')).forEach(function (el) {
+        el.disabled = true;
+    });
+    __slice.call(document.querySelectorAll('.status')).forEach(function (el) {
+        el.classList.add('disabled');
+    });
+}
+
+function updateStatus(res) {
+    var status = document.getElementById('status');
+    if (res.connected)
+        disableAll();
+    else
+        enableAll();
+    status.classList.remove(res.connected ? "offline" : "online");
+    status.classList.add(res.connected ? "online" : "offline");
 }

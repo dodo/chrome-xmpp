@@ -13,8 +13,9 @@ var Account = require('./account');
 
 module.exports = Client;
 util.inherits(Client, Connection);
-function Client(port, accounts) {
+function Client(port, accounts, frontend) {
     Connection.call(this, {target:port}).listen(port);
+    this.frontend = frontend;
     this.accounts = accounts;
     this.connections = {};
     this.setupListeners();
@@ -46,12 +47,16 @@ Client.prototype.emit = function emit(event/*, [args,…]*/) {
 };
 
 Client.prototype.send = function send(id, event /*, [args…]*/) {
-    var args = __slice.call(arguments, 1).map(jsonify); // dont send id
-console.warn('postmessage', event, "»", id, args, this.target)
+    var args = __slice.call(arguments, 1); // dont send id
+    var data = args.map(jsonify);
+    if (event === 'status') {
+        // multiplex over to the frontend pages
+        this.frontend.send.apply(this.frontend, args);
+    }
     if (this.target) {
         this.target.postMessage({
            event:event,
-           args:args,
+           args:data,
            ns:Connection.NS,
            id:id,
         });
