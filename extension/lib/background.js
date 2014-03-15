@@ -50,9 +50,9 @@ chrome.runtime.onConnect.addListener(function (port) {
     });
 });
 
-function getAppID() {
+self.getAppID = function getAppID() {
     return bgappid;
-}
+};
 
 /*------------------------------------------------------------------------------
  * infobar callbacks
