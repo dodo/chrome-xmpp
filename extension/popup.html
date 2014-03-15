@@ -3,14 +3,23 @@
   <head>
     <style>
       body {
-        min-width: 512px;
+        min-width: 23em;
         overflow-x: hidden;
+      }
+      nav {
+        float: right;
+        margin-top: -0.25em;
+      }
+      button {
+        font-size: 0.9em;
       }
       .hidden {
         display: none;
       }
       #jid {
-          font-size: 1.1em;
+        font-size: 1.1em;
+        padding-left: 24px;
+        background: url(favicon.png) no-repeat;
       }
       .status {
         font-weight: bold;
@@ -27,9 +36,15 @@
 
   </head>
   <body>
-    <span id="jid"></span>:&nbsp;<span id="online" class="hidden status">online</span><span id="offline" class="hidden status">offline</span>
+    <span id="jid"></span> &nbsp; <span id="online" class="hidden status">online</span><span id="offline" class="hidden status">offline</span>
+    <nav>
+      <button class="hidden" id="no-jid" href="options.html#popup">Options</button>
+      <button class="hidden" id="connect">connect</button>
+      <button class="hidden" id="disconnect">disconnect</button>
+    </nav>
   </body>
   <script src="backport.js"></script>
+  <script src="widget.js"></script>
   <script src="popup.js"></script>
 </html>
 

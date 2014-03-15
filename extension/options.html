@@ -13,6 +13,12 @@
       padding-bottom: 20px;
       padding-top: 55px;
     }
+    body > nav {
+      position: absolute;
+      right: 0.6em;
+      top: 0.6em;
+      z-index: 2;
+    }
     header:before {
         position: absolute;
         font-weight: bold;
@@ -39,6 +45,9 @@
     .config header:before {
         content: "⚑";
     }
+    .hidden {
+      display: none;
+    }
     .disabled {
         opacity: 0.32;
     }
@@ -54,6 +63,7 @@
         width: 100%;
         padding: 0.2em 1em 0.2em 1em;
         text-shadow: 0 0 0.2em white;
+        transition: background-color 2s;
         font-size: 2em;
         font-weight: bolder;
         color: white;
@@ -69,7 +79,10 @@
 
   </head>
   <body>
-  <header id="status"></header>
+  <nav>
+    <button id="back" class="hidden" href="popup.html">back</button>
+  </nav>
+  <header id="status" class="hidden"></header>
 
   <div class="disabled left account status">
     <header>
@@ -139,5 +152,6 @@
   </body>
 <script src="backport.js"></script>
 <script src="options.js"></script>
+<script src="widget.js"></script>
 </html>
 

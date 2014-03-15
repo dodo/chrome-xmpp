@@ -3,6 +3,9 @@ var __indexOf = Array.prototype.indexOf;
 var backport;
 
 document.addEventListener('DOMContentLoaded', function restore() {
+    if (self.location.hash === '#popup') {
+        document.getElementById('back').classList.remove('hidden');
+    }
     ['jid','pw','host','port','preferred'].forEach(function (id) {
         if (localStorage[id])
             document.getElementById(id).value = localStorage[id];
@@ -65,6 +68,12 @@ document.getElementById('jid').addEventListener('keyup', function keyup(ev) {
 document.getElementById('save-jid').addEventListener('click', function save(ev) {
     localStorage["jid"] = document.getElementById("jid").value.trim();
     localStorage["pw" ] = document.getElementById("pw").value;
+    if (localStorage['jid'] && localStorage['jid'].length) {
+        document.getElementById('status').classList.remove('hidden');
+    } else {
+        document.getElementById('status').classList.add('hidden');
+        delete localStorage['jid'];
+    }
     notify("status-jid", "Account Saved.");
 });
 
@@ -133,6 +142,8 @@ function updateStatus(res) {
         disableAll();
     else
         enableAll();
+    if (localStorage['jid'])
+        status.classList.remove("hidden");
     status.classList.remove(res.connected ? "offline" : "online");
     status.classList.add(res.connected ? "online" : "offline");
 }
