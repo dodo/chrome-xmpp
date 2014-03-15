@@ -78,7 +78,7 @@ Client.prototype.onAttach = function onAttach(opts) {
     } else {
         var updateStatus = function () {
             that.send(opts.id, 'status', opts.jid, {
-                connected:this.connected,
+                connected:that.accounts[opts.jid].connected,
             });
         };
         this.accounts[opts.jid] = new Account(opts);
