@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
         });
     } else {
         plugins = __slice.call(
-            document.querySelector('.config').querySelectorAll('.plugin')
+            document.querySelector('.config').getElementsByClassName('plugin')
         ).map(function (plugin) {
             plugin.checked = true;
             return plugin.id.replace(/^plugin-/, '');
@@ -95,7 +95,7 @@ document.getElementById('save-jid-params').addEventListener('click', function sa
 
 document.getElementById('save-config').addEventListener('click', function save(ev) {
     var plugins = __slice.call(
-        document.querySelector('.config').querySelectorAll('.plugin')
+        document.querySelector('.config').getElementsByClassName('plugin')
     ).filter(function (plugin) {
         return plugin.checked;
     }).map(function (plugin) {
@@ -120,17 +120,20 @@ function enableAll() {
     __slice.call(document.querySelectorAll('*[disabled]')).forEach(function (el) {
         el.disabled = false;
     });
-    __slice.call(document.querySelectorAll('.disabled')).forEach(function (el) {
+    __slice.call(document.getElementsByClassName('disabled')).forEach(function (el) {
         el.classList.remove('disabled');
     });
 }
 
 function disableAll() {
     document.getElementById('status').textContent = "online";
-    __slice.call(document.querySelectorAll('input, button')).forEach(function (el) {
+    __slice.call(document.querySelectorAll([
+        'fieldset input',
+        'fieldset button',
+    ].join(', '))).forEach(function (el) {
         el.disabled = true;
     });
-    __slice.call(document.querySelectorAll('.status')).forEach(function (el) {
+    __slice.call(document.getElementsByTagName('fieldset')).forEach(function (el) {
         el.classList.add('disabled');
     });
 }
