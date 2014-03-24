@@ -22,6 +22,18 @@ proto.emit = function (event/*, [args, …]*/) {
     }
 };
 
+proto.send = function (event/*, [args, …]*/) {
+    if (this.port) {
+        var args = __slice.call(arguments);
+        this.port.postMessage({
+            id:this.id,
+            event:event,
+            args:args,
+            ns:'chrome-xmpp',
+        });
+    }
+};
+
 proto.connect = function () {
     var that = this;
     chrome.runtime.getBackgroundPage(function (bg) {

@@ -64,7 +64,6 @@ Client.prototype.send = function send(id, event /*, [args…]*/) {
 };
 
 Client.prototype.onAttach = function onAttach(opts) {
-    var that = this;
     var conn = new EventEmitter();
     opts.connection = conn;
     opts.id = this.id;
@@ -73,19 +72,9 @@ Client.prototype.onAttach = function onAttach(opts) {
     conn.send = this.send.bind(this, this.id, 'proxy');
     this.connections[this.id] = conn;
     // hook to an account
-    if (this.accounts[opts.jid]) {
-        this.accounts[opts.jid].attach(opts);
-    } else {
-        var updateStatus = function () {
-            that.send(opts.id, 'status', opts.jid, {
-                connected:that.accounts[opts.jid].connected,
-            });
-        };
-        this.accounts[opts.jid] = new Account(opts);
-        this.accounts[opts.jid].fd
-            .on('offline', updateStatus)
-            .on('online',  updateStatus)
-    }
+    if (!this.accounts[opts.jid])
+        this.createAccount(opts);
+    this.accounts[opts.jid].attach(opts);
     queue.forEach(function (args) {
         conn.emit.apply(conn, args);
     });
@@ -102,6 +91,25 @@ Client.prototype.onDetach = function onDetach(opts) {
             delete this.accounts[opts.jid];
     }
 };
+
+Client.prototype.createAccount = function (opts) {
+    var account = new Account(opts)
+    this.accounts[opts.jid] = account;
+    account.update = updateStatus.bind(this, account, opts.jid);
+    account.fd
+        .on('offline', account.update)
+        .on('online',  account.update);
+    return account;
+};
+
+Client.prototype.deleteAccount = function (opts) {
+    this.accounts[opts.jid].disconnect();
+    delete this.accounts[opts.jid];
+}
+
+function updateStatus(account, jid) {
+    this.send('frontend', 'status', jid, {connected:account.connected});
+}
 
 function jsonify(arg) {
     return (arg instanceof Element) ? {
