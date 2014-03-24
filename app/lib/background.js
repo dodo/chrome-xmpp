@@ -44,8 +44,7 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     } else {
         var client = new Client(port, accounts, frontend);
         pool[client.id] = client;
-        port.onDisconnect.addListener(function () {
-            client.removeAllListeners();
+        client.once('unbind', function () {
             delete pool[client.id];
         });
     }

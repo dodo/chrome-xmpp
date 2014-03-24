@@ -14,7 +14,10 @@ var Account = require('./account');
 module.exports = Client;
 util.inherits(Client, Connection);
 function Client(port, accounts, frontend) {
-    Connection.call(this, {target:port}).listen(port);
+    Connection.call(this).bind(port, function () {
+        this.emit('unbind');
+        this.removeAllListeners();
+    });
     this.frontend = frontend;
     this.accounts = accounts;
     this.connections = {};
