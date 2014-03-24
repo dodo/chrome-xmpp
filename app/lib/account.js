@@ -14,9 +14,7 @@ module.exports = Client;
 function Client(opts) {
     var that = this;
     this.stayAlive = opts.cfg.stayAlive;
-    this.jid = opts.jid;
     this.ids = {};
-    this.attach(opts);
     this.connected = false;
     var fd = this.fd = new Lightstream({
         backend:require('lightstream/backend/node-xmpp'),
