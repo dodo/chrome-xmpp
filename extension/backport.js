@@ -50,3 +50,11 @@ proto.connect = function () {
         };
     });
 };
+
+proto.dispatch = function (el) {
+    return el.dispatchEvent(new CustomEvent('BackPortLoaded', {
+        cancelable: true,
+        bubbles: true,
+        detail: this,
+    }));
+};

@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
             if (jid === localStorage['jid'])
                 updateStatus(res);
         });
+    backport.dispatch(document);
 });
 
 document.getElementById('jid').addEventListener('keyup', function keyup(ev) {

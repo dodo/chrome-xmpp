@@ -7,3 +7,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+
+document.addEventListener('BackPortLoaded', function (ev) {
+    var backport = ev.detail;
+    document.getElementById('connect').addEventListener('click', function (ev) {
+        ev.target.disabled = true;
+        backport.send('connect', attachOptions());
+    });
+    document.getElementById('disconnect').addEventListener('click', function (ev) {
+        ev.target.disabled = true;
+        backport.send('disconnect', {jid:localStorage['jid']});
+    });
+});

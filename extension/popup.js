@@ -20,12 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (jid === localStorage['jid'])
                 updateStatus(res);
         });
-    document.getElementById('connect').addEventListener('click', function (ev) {
-        ev.target.disabled = true;
-    });
-    document.getElementById('disconnect').addEventListener('click', function (ev) {
-        ev.target.disabled = true;
-    });
+    backport.dispatch(document);
 });
 
 function updateStatus(res) {
