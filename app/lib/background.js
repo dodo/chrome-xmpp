@@ -1,7 +1,10 @@
 /*
  * This script starts a pool client for each extension connection.
  */
+var isArray = Array.isArray;
 var __slice = Array.prototype.slice;
+var util = require('util');
+var EventEmitter = require('events').EventEmitter;
 var Connection = require('../../lib/connection');
 var Client = require('./pool');
 var accounts = {};
@@ -57,12 +60,38 @@ chrome.runtime.onConnectExternal.addListener(function (port) {
     }
 });
 
+util.inherits(Repeater, EventEmitter);
 function Repeater() {
+    EventEmitter.call(this);
     this.targets = [];
+    this.on('removeListener', function (event, listener) {
+        this.targets.forEach(function (target) {
+            target.removeListener(event, listener);
+        });
+    });
+    this.on('newListener', function (event, listener) {
+        if (!this._events[event] || this._events[event].length === 0) {
+            this.targets.forEach(this.proxy.bind(this, event, listener));
+        }
+    });
 }
 
+Repeater.prototype.proxy = function (event, listener, target) {
+    var emit = this.emit.bind(this, event);
+    emit.listener = listener
+                 || (this._events[event] && this._events[event][0])
+                 ||  this._events[event];
+    target.on(event, emit);
+    return this;
+};
+
 Repeater.prototype.pipe = function (target) {
-    if (target) this.targets.push(target);
+    if (!target) return this;
+    this.targets.push(target);
+    Object.keys(this._events).forEach(function (event) {
+        if (event !== 'newListener' && event !== 'removeListener')
+            this.proxy(event, null, target);
+    }.bind(this));
     return this;
 };
 
