@@ -7,31 +7,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
     if (isPopup) {
         document.getElementById('back').classList.remove('hidden');
     }
-    ['jid','pw','host','port','preferred'].forEach(function (id) {
-        if (localStorage[id])
-            document.getElementById(id).value = localStorage[id];
-    });
-    var host = document.getElementById('host');
-    host.placeholder = localStorage['host'] || 'localhost';
-    if (localStorage['host'] && localStorage['jid']) {
-        var jid = localStorage['jid'];
-        var i = jid.lastIndexOf("@");
-        if (i > -1 && jid.substr(i + 1) === localStorage['host']) {
-            delete localStorage['host'];
-            host.value = "";
-        }
-    } else if (!localStorage['host'] && localStorage['jid']) {
-        var jid = localStorage['jid'];
-        var i = jid.lastIndexOf("@");
-        if (i > -1) host.placeholder = jid.substr(i + 1);
-    }
-    if (localStorage['reconnect'])
-        document.getElementById('reconnect').checked = true;
-    if (localStorage['plugins']) {
-        JSON.parse(localStorage['plugins']).forEach(function (plugin) {
-            document.getElementById('plugin-' + plugin).checked = true;
-        });
-    } else {
+    if (!localStorage['plugins']) {
         plugins = __slice.call(
             document.querySelector('.config').getElementsByClassName('plugin')
         ).map(function (plugin) {
@@ -40,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
         });
         localStorage['plugins'] = JSON.stringify(plugins);
     }
-
+    updateData();
     if (localStorage['jid']) {
         chrome.extension.sendRequest({type:'status', jid:localStorage['jid']}, function (res) {
             res = res || {connected:false};
@@ -50,7 +26,14 @@ document.addEventListener('DOMContentLoaded', function restore() {
     } else updateStatus({connected:false});
     // connect directly to the packaged app
     backport = new BackPort((isPopup ? 'popup' : 'tab') + '-options')
+        .on('update', function () {
+            // when data can change means client must be offline
+            updateData();
+            updateStatus({connected:false});
+        })
         .on('status', function (jid, res) {
+            if (!localStorage['jid'] && res.connected)
+                 localStorage['jid'] = jid; // created in popup
             if (jid === localStorage['jid'])
                 updateStatus(res);
         });
@@ -69,13 +52,11 @@ document.getElementById('jid').addEventListener('keyup', function keyup(ev) {
 document.getElementById('save-jid').addEventListener('click', function save(ev) {
     localStorage["jid"] = document.getElementById("jid").value.trim();
     localStorage["pw" ] = document.getElementById("pw").value;
-    if (localStorage['jid'] && localStorage['jid'].length) {
-        document.getElementById('status').classList.remove('hidden');
-    } else {
-        document.getElementById('status').classList.add('hidden');
+    if (!localStorage['jid'] || !localStorage['jid'].length)
         delete localStorage['jid'];
-    }
+    updateStatus({connected:false});
     notify("status-jid", "Account Saved.");
+    backport.send('update');
 });
 
 document.getElementById('save-jid-params').addEventListener('click', function save(ev) {
@@ -93,6 +74,7 @@ document.getElementById('save-jid-params').addEventListener('click', function sa
     if (el.checked) localStorage['reconnect'] = 'on';
     else delete localStorage['reconnect'];
     notify("status-jid-params", "Parameter Saved.");
+    backport.send('update');
 });
 
 document.getElementById('save-config').addEventListener('click', function save(ev) {
@@ -105,6 +87,7 @@ document.getElementById('save-config').addEventListener('click', function save(e
     });
     localStorage['plugins'] = JSON.stringify(plugins);
     notify("status-config", "Settings Saved.");
+    backport.send('update');
 });
 
 
@@ -119,6 +102,13 @@ function notify(id, message) {
 
 function enableAll() {
     document.getElementById('status').textContent = "offline";
+    if (localStorage['jid']) {
+        document.getElementById('connect').classList.remove('hidden');
+        document.getElementById('disconnect').classList.add('hidden');
+    } else {
+        document.getElementById('connect').classList.add('hidden');
+        document.getElementById('disconnect').classList.add('hidden');
+    }
     __slice.call(document.querySelectorAll('*[disabled]')).forEach(function (el) {
         el.disabled = false;
     });
@@ -129,6 +119,13 @@ function enableAll() {
 
 function disableAll() {
     document.getElementById('status').textContent = "online";
+    if (localStorage['jid']) {
+        document.getElementById('connect').classList.add('hidden');
+        document.getElementById('disconnect').classList.remove('hidden');
+    } else {
+        document.getElementById('connect').classList.add('hidden');
+        document.getElementById('disconnect').classList.add('hidden');
+    }
     __slice.call(document.querySelectorAll([
         'fieldset input',
         'fieldset button',
@@ -146,8 +143,28 @@ function updateStatus(res) {
         disableAll();
     else
         enableAll();
-    if (localStorage['jid'])
+    if (localStorage['jid']) {
         status.classList.remove("hidden");
+    } else {
+        status.classList.add("hidden");
+    }
     status.classList.remove(res.connected ? "offline" : "online");
     status.classList.add(res.connected ? "online" : "offline");
+}
+
+function updateData() {
+    ['jid','pw','host','port','preferred'].forEach(function (id) {
+        document.getElementById(id).value = localStorage[id] || "";
+    });
+    var host = document.getElementById('host');
+    host.placeholder = localStorage['host'] || 'localhost';
+    if (localStorage['jid']) {
+        var jid = localStorage['jid'];
+        var i = jid.lastIndexOf("@");
+        if (i > -1) host.placeholder = jid.substr(i + 1);
+    }
+    document.getElementById('reconnect').checked = !!localStorage['reconnect'];
+    JSON.parse(localStorage['plugins']).forEach(function (plugin) {
+        document.getElementById('plugin-' + plugin).checked = true;
+    });
 }
