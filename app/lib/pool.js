@@ -58,8 +58,7 @@ Client.prototype.emit = function emit(event/*, [args,…]*/) {
         conn.emit.apply(conn, args);
     else
         conn = this.connections[this.id] = {queue:[args]};
-//     if (event === 'attach' || event === 'detach')
-        Connection.prototype.emit.apply(this, args);
+    Connection.prototype.emit.apply(this, args);
 };
 
 Client.prototype.send = function send(id, event /*, [args…]*/) {

@@ -8,8 +8,6 @@ var XEP = require('lightstream/xep');
 function xep(name) {return XEP[name]}
 
 
-// Client.EVENTS = ['connect', 'reconnect', 'disconnect', 'online', 'offline', 'error', 'end', 'stanza'];
-
 module.exports = Client;
 function Client(opts) {
     var that = this;
@@ -61,31 +59,6 @@ Client.prototype.attach = function attach(opts) {
         // TODO filter ids for permissions
         that.fd.on(event, conn.send.bind(conn, event));
     });
-//     conn.on('newListener', function (event) {
-//         if (conn.listeners(event).length === 0) {
-//             if (event.indexOf('.') === -1) {
-//                 that.fd.on(event, that.emit.bind(that, event));
-//             } else {
-//                 var steps = event.split('.');
-//                     event = steps.pop();
-//                 var ptr = that.fd.extension;
-//                 steps.forEach(function (step) {
-//                     ptr = ptr && ptr[step];
-//                 });
-//                 if (ptr && ptr[method]) {
-//                     ptr[method].on(event, )
-//                 }
-//             }
-//         }
-//     });
-    // TODO FIXME pipe events from injectxmpp to client which should be an eventemitter
-//     Client.EVENTS.forEach(function (event) {
-//         conn.on(event, function () {
-//             var args = [event].concat(Array.prototype.slice.call(arguments));
-//             // TODO filter ids for permissions
-//             that.emit.apply(that, args);
-//         });
-//     });
     if (this.connected) process.nextTick(function () {
         conn.send('online');
     });
@@ -100,17 +73,6 @@ Client.prototype.detach = function detach(opts) {
         this.disconnect();
     return this;
 };
-
-// Client.prototype.setupEvents = function setupEvents() {
-//     var that = this;
-//     Client.EVENTS.forEach(function (event) {
-//         that.fd.on(event, function () {
-//             var args = [event].concat(__slice.call(arguments));
-//             // TODO filter ids for permissions
-//             that.send.apply(that, args);
-//         });
-//     });
-// };
 
 Client.prototype.send = function send(/*[event, args…]*/) {
     var args = __slice.call(arguments);
