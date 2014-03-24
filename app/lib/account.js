@@ -23,9 +23,19 @@ function Client(opts) {
     }).use(opts.cfg.plugins.filter(xep).map(xep));
     fd.on( 'online', function () {that.connected = true });
     fd.on('offline', function () {that.connected = false});
-    process.nextTick(function () {
-        fd.connect(opts.jid, opts.password, opts.params);
-    });
+    fd.on('error', console.error.bind(console, "lightstream:"));
+    process.nextTick(this.connect.bind(this, opts));
+}
+
+Client.prototype.connect = function connect(opts) {
+    this.jid = opts.jid;
+    this.fd.connect(opts.jid, opts.password, opts.params);
+    return this;
+}
+
+Client.prototype.disconnect = function disconnect() {
+    this.fd.disconnect();
+    return this;
 }
 
 Client.prototype.attach = function attach(opts) {
@@ -81,7 +91,7 @@ Client.prototype.attach = function attach(opts) {
     if (this.connected) process.nextTick(function () {
         conn.send('online');
     });
-
+    return this;
 };
 
 Client.prototype.detach = function detach(opts) {
@@ -89,7 +99,8 @@ Client.prototype.detach = function detach(opts) {
     this.ids[opts.id].removeAllListeners();
     delete this.ids[opts.id];
     if (!this.stayAlive && Object.keys(this.ids).length === 0)
-        this.fd.disconnect();
+        this.disconnect();
+    return this;
 };
 
 // Client.prototype.setupEvents = function setupEvents() {
