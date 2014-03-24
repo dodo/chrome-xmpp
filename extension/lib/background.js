@@ -6,6 +6,7 @@
  */
 var util = require('util');
 var Connection = require('../../lib/connection');
+var attachOptions = require('../client');
 
 var bgapp, bgappid, actions = {}, pool = {}, status = {};
 chrome.management.getAll(function (apps) {
@@ -111,23 +112,9 @@ Client.prototype.deny = function deny() {
 };
 
 Client.prototype.attach = function attach() {
-    var passwd = localStorage['pw'];
-    this.jid = localStorage['jid'];
-    var params = {};
-    ['host', 'port', 'preferred'].forEach(function (key) {
-        if (localStorage[key])
-            params[key] = localStorage[key];
-    });
-    if (localStorage['reconnect']) params['reconnect'] = true;
-    this.send('attach', {
-        jid:this.jid,
-        // in case a new account is created:
-        password: passwd,
-        params: params,
-        cfg:{
-            plugins:JSON.parse(localStorage['plugins'] || '[]'),
-        },
-    });
+    var opts = attachOptions(); // query localStorage
+    this.jid = opts.jid;
+    this.send('attach', opts);
 };
 
 Client.prototype.detach = function detach() {
