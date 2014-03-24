@@ -36,20 +36,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 chrome.runtime.onConnectExternal.addListener(function (port) {
     if (port.name === 'tab-options') {
-        options.tab.pipe(port);
-        port.onDisconnect.addListener(function () {
-            options.tab.target = undefined;
-        });
+        options.tab.bind(port);
     } else if (port.name === 'popup-options') {
-        options.popup.pipe(port);
-        port.onDisconnect.addListener(function () {
-            options.popup.target = undefined;
-        });
+        options.popup.bind(port);
     } else if (port.name === 'popup') {
-        popup.pipe(port);
-        port.onDisconnect.addListener(function () {
-            popup.target = undefined;
-        });
+        popup.bind(port);
     } else {
         var client = new Client(port, accounts, frontend);
         pool[client.id] = client;
