@@ -27,6 +27,19 @@ function Client(port, accounts, frontend) {
 Client.prototype.setupListeners = function setupListeners() {
     this.on('attach', this.onAttach.bind(this));
     this.on('detach', this.onDetach.bind(this));
+    var that = this;
+    this.frontend.on('update', this.frontend.send.bind(this.frontend,'update'));
+    this.frontend.on('connect', function (opts) {
+        if (opts && !that.accounts[opts.jid]) {
+            that.createAccount(opts);
+        } else if (opts) {
+            that.accounts[opts.jid].connect(opts);
+        }
+    });
+    this.frontend.on('disconnect', function (opts) {
+        if (opts && that.accounts[opts.jid])
+            that.deleteAccount(opts);
+    });
 };
 
 Client.prototype.onMessage = function onMessage(ev) {
