@@ -15,21 +15,15 @@ chrome.management.getAll(function (apps) {
         bgappid = app.id;
         return true;
     })) {
-
-        if (localStorage['jid'] && localStorage['pw']) {
-            // autostart
-            chrome.management.launchApp(bgappid, function () {
-
-                bgapp = new Connection();
-                bgapp.id = null; // allow all ids
-                bgapp.on('error', console.error.bind(console));
-                bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
-                bgapp.on('status', function (jid, state) {
-                   status[jid] = state;
-                });
+        chrome.management.launchApp(bgappid, function () {
+            bgapp = new Connection();
+            bgapp.id = null; // allow all ids
+            bgapp.on('error', console.error.bind(console));
+            bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
+            bgapp.on('status', function (jid, state) {
+                status[jid] = state;
             });
-        }
-
+        });
     };
 });
 
