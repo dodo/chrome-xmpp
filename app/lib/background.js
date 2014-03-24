@@ -6,13 +6,17 @@ var Connection = require('../../lib/connection');
 var Client = require('./pool');
 var accounts = {};
 var pool = {}; // of each extension connection
-var options = new Connection({id:'options'});
-var popup = new Connection({id:'popup'});
 var frontend;
+var popup = new Connection({id:'popup'});
+var options = {
+    popup:  new Connection({id:'popup-options'}),
+    tab:    new Connection({id:'tab-options'}),
+};
 
 chrome.app.runtime.onLaunched.addListener(function() {
     frontend = new Repeater()
-        .pipe(options)
+        .pipe(options.popup)
+        .pipe(options.tab)
         .pipe(popup);
 
     chrome.notifications.create("onLaunched", {
@@ -28,10 +32,15 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 
 chrome.runtime.onConnectExternal.addListener(function (port) {
-    if (port.name === 'options') {
-        options.pipe(port);
+    if (port.name === 'tab-options') {
+        options.tab.pipe(port);
         port.onDisconnect.addListener(function () {
-            options.target = undefined;
+            options.tab.target = undefined;
+        });
+    } else if (port.name === 'popup-options') {
+        options.popup.pipe(port);
+        port.onDisconnect.addListener(function () {
+            options.popup.target = undefined;
         });
     } else if (port.name === 'popup') {
         popup.pipe(port);
@@ -55,7 +64,7 @@ function Repeater() {
 Repeater.prototype.pipe = function (target) {
     if (target) this.targets.push(target);
     return this;
-}
+};
 
 Repeater.prototype.send = function (/*[args,…]*/) {
     var args = __slice.call(arguments);

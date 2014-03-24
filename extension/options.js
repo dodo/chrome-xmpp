@@ -3,7 +3,8 @@ var __indexOf = Array.prototype.indexOf;
 var backport;
 
 document.addEventListener('DOMContentLoaded', function restore() {
-    if (self.location.hash === '#popup') {
+    var isPopup = self.location.hash === '#popup';
+    if (isPopup) {
         document.getElementById('back').classList.remove('hidden');
     }
     ['jid','pw','host','port','preferred'].forEach(function (id) {
@@ -48,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
         });
     } else updateStatus({connected:false});
     // connect directly to the packaged app
-    backport = new BackPort('options')
+    backport = new BackPort((isPopup ? 'popup' : 'tab') + '-options')
         .on('status', function (jid, res) {
             if (jid === localStorage['jid'])
                 updateStatus(res);
