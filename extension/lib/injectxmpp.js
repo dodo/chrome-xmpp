@@ -73,6 +73,10 @@ window.testXMPP = function () {
         console.log("received a presence", stanza);
     });
 
+    client.on('version.info', function (stanza) {
+        console.log("received a version info", stanza);
+    });
+
 
     client.on('online', function () {
         console.log("online");
