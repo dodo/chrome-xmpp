@@ -5,23 +5,24 @@ function BackPort(id) {
     this.id = id;
     this.connect();
 }
+var proto = BackPort.prototype;
 
-BackPort.prototype.on = function (event, listener)  {
+proto.on = function (event, listener)  {
     this._events[event] = this._events[event] || [];
     this._events[event].push(listener);
     return this;
-}
+};
 
-BackPort.prototype.emit = function (event/*, [args, …]*/) {
+proto.emit = function (event/*, [args, …]*/) {
     if (this._events[event]) {
         var args = __slice.call(arguments, 1);
         this._events[event].forEach(function (listener) {
             listener.apply(this, args);
         }.bind(this));
     }
-}
+};
 
-BackPort.prototype.connect = function () {
+proto.connect = function () {
     var that = this;
     chrome.runtime.getBackgroundPage(function (bg) {
         var appid = bg && bg.getAppID();
