@@ -59,7 +59,7 @@ document.getElementById('save-jid').addEventListener('click', function save(ev) 
 });
 
 document.getElementById('save-jid-params').addEventListener('click', function save(ev) {
-    var el;['host', 'port', 'preferred'].forEach(function (id) {
+    var el;['host', 'port', 'preferred', 'resource'].forEach(function (id) {
         el = document.getElementById(id);
         if (el.value.trim().length) localStorage[id] = el.value.trim();
         else delete localStorage[id];
@@ -155,7 +155,7 @@ function updateStatus(res) {
 }
 
 function updateData() {
-    ['jid','pw','host','port','preferred'].forEach(function (id) {
+    ['jid','pw','host','port','preferred','resource'].forEach(function (id) {
         document.getElementById(id).value = localStorage[id] || "";
     });
     var host = document.getElementById('host');

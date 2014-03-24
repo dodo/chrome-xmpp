@@ -11,6 +11,7 @@ function attachOptions() {
     return {
         jid: localStorage['jid'],
         password: localStorage['pw'],
+        resource: localStorage['resource'],
         params: params,
         cfg:{
             plugins:JSON.parse(localStorage['plugins'] || '[]'),

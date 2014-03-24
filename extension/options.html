@@ -25,6 +25,10 @@
     fieldset {
       border: none;
     }
+    strong {
+        font-size: 1.8em;
+        font-weight: normal;
+    }
     header:before {
         position: absolute;
         font-weight: bold;
@@ -115,6 +119,10 @@
     <header>
       <h3>Parameter</h3>
     </header>
+
+    <p>
+    <strong style="margin-left:-0.5em"> / </strong><input type="text" id="resource" placeholder="{random resource}" title="JID resource. leave blank for random resource." disabled="disabled">
+    </p>
 
     <p>
     <input type="text" id="host" placeholder="host" title="server host to connect to" disabled="disabled"><strong> : </strong><input type="text" id="port" placeholder="5222" title="server port to connect to" size="5" disabled="disabled">

@@ -25,7 +25,10 @@ function Client(opts) {
 
 Client.prototype.connect = function connect(opts) {
     this.jid = opts.jid;
-    this.fd.connect(opts.jid, opts.password, opts.params);
+    this.fulljid = opts.jid;
+    if (opts.resource)
+        this.fulljid += "/" + opts.resource;
+    this.fd.connect(this.fulljid, opts.password, opts.params);
     return this;
 }
 
