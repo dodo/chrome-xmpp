@@ -23,3 +23,21 @@ Add XMPP as Feature to your Browser.
 it's ready, when it's ready :)
 … or you start contributing and shorten your waiting time.
 
+
+#### how to check this out?
+
+Make sure you have [grunt](https://gruntjs.com/) installed.
+
+```bash
+git clone git://github.com/dodo/chrome-xmpp.git
+cd chrome-xmpp/
+npm install .
+grunt
+```
+
+- Goto `Chrome/chromium menu` > `Settings` > `Extensions`.
+- Check `Developer mode` on.
+- Click `Load unpacked extension…`
+- Select `chrome-xmpp/app` and `chrome-xmpp/extension` folder.
+- Be Happy :)
+
