@@ -46,6 +46,7 @@ proto.disconnect = function () {
 //------------------------------------------------------------------------------
 
 window.testXMPP = function () {
+    var match = require('JSONSelect').match; // FIXME
     var client = new window.XMPP().connect();
 
 
@@ -79,6 +80,19 @@ window.testXMPP = function () {
 
     client.on('message.receive', function (stanza) {
         console.log("received a message", stanza);
+
+        if (stanza.attrs.type === 'error') return; // never reply to errors
+        // lift text body
+        var body = match('.name:val("body") ~ .children string', stanza);
+        if (body && body.length)
+            stanza.attrs.body = body.join("");
+        // Swap addresses...
+        stanza.attrs.to = stanza.attrs.from;
+        delete stanza.attrs.from;
+        // and send back.
+        setTimeout(function () {
+            client.call('message.send', stanza.attrs);
+        }, 1000);
     });
 
     client.on('version.info', function (stanza) {
