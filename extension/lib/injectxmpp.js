@@ -73,6 +73,14 @@ window.testXMPP = function () {
         console.log("received a presence", stanza);
     });
 
+    client.on('message.send', function (stanza) {
+        console.log("sent a message", stanza);
+    });
+
+    client.on('message.receive', function (stanza) {
+        console.log("received a message", stanza);
+    });
+
     client.on('version.info', function (stanza) {
         console.log("received a version info", stanza);
     });
@@ -87,14 +95,5 @@ window.testXMPP = function () {
         });
     });
 
-//     client.router.match("self::message", function (stanza) {
-//         if (stanza.attrs.type === 'error') return; // never reply to errors
-//         console.log(stanza.toString())
-//         // Swap addresses...
-//         stanza.attrs.to = stanza.attrs.from;
-//         delete stanza.attrs.from;
-//         // and send back.
-//         client.send(stanza);
-//     });
     return client;
 }
