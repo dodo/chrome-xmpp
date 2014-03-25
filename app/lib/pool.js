@@ -3,6 +3,7 @@
  * to pipe events multiplexed by extension
  * to different eventemitters in each account.
  */
+var isArray = Array.isArray;
 var __slice = Array.prototype.slice;
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
@@ -133,6 +134,8 @@ function jsonify(arg) {
         children:__slice.call(arg.children || []).map(jsonify),
     } : (arg instanceof Error) ? (
         arg.stack || arg.message
+    ) : isArray(arg) ? (
+        arg.map(jsonify)
     ) : arg;
 }
 
