@@ -29,17 +29,18 @@ Client.prototype.setupListeners = function setupListeners() {
     this.on('attach', this.onAttach.bind(this));
     this.on('detach', this.onDetach.bind(this));
     var that = this;
+    this.frontend.on('add', this.frontend.send.bind(this.frontend,'add'));
     this.frontend.on('update', this.frontend.send.bind(this.frontend,'update'));
-    this.frontend.on('connect', function (opts) {
-        if (opts && !that.accounts[opts.jid]) {
-            that.createAccount(opts);
-        } else if (opts) {
-            that.accounts[opts.jid].connect(opts);
+    this.frontend.on('connect', function (account) {
+        if (account && !that.accounts[account.id]) {
+            that.createAccount(account);
+        } else if (account) {
+            that.accounts[account.id].connect(account);
         }
     });
-    this.frontend.on('disconnect', function (opts) {
-        if (opts && that.accounts[opts.jid])
-            that.deleteAccount(opts);
+    this.frontend.on('disconnect', function (account) {
+        if (account && that.accounts[account.id])
+            that.deleteAccount(account);
     });
 };
 
@@ -79,48 +80,48 @@ Client.prototype.send = function send(id, event /*, [args…]*/) {
     }
 };
 
-Client.prototype.onAttach = function onAttach(opts) {
+Client.prototype.onAttach = function onAttach(account) {
     var conn = new EventEmitter();
-    opts.connection = conn;
-    opts.id = this.id;
+    account.connection = conn;
+    account.cid = this.id;
     var queue = this.connections[this.id] && this.connections[this.id].queue || [];
     // pipe events send from account to connection and back
     conn.send = this.send.bind(this, this.id, 'proxy');
     this.connections[this.id] = conn;
     // hook to an account
-    if (!this.accounts[opts.jid])
-        this.createAccount(opts);
-    this.accounts[opts.jid].attach(opts);
+    if (!this.accounts[account.id])
+        this.createAccount(account);
+    this.accounts[account.id].attach(account);
     queue.forEach(function (args) {
         conn.emit.apply(conn, args);
     });
 };
 
-Client.prototype.onDetach = function onDetach(opts) {
-    opts.id = this.id;
-    opts.connection = this.connections[this.id];
-    if (this.accounts[opts.jid]) {
-        this.accounts[opts.jid].detach(opts);
+Client.prototype.onDetach = function onDetach(account) {
+    account.cid = this.id;
+    account.connection = this.connections[this.id];
+    if (this.accounts[account.id]) {
+        this.accounts[account.id].detach(account);
         delete this.connections[this.id].send;
         delete this.connections[this.id];
-        if (!this.accounts[opts.jid].fd)
-            delete this.accounts[opts.jid];
+        if (!this.accounts[account.id].fd)
+            delete this.accounts[account.id];
     }
 };
 
 Client.prototype.createAccount = function (opts) {
     var account = new Account(opts)
-    this.accounts[opts.jid] = account;
-    account.update = updateStatus.bind(this, account, opts.jid);
+    this.accounts[opts.id] = account;
+    account.update = updateStatus.bind(this, account, opts.id);
     account.fd
         .on('offline', account.update)
         .on('online',  account.update);
     return account;
 };
 
-Client.prototype.deleteAccount = function (opts) {
-    this.accounts[opts.jid].disconnect();
-    delete this.accounts[opts.jid];
+Client.prototype.deleteAccount = function (account) {
+    this.accounts[account.id].disconnect();
+    delete this.accounts[account.id];
 }
 
 function updateStatus(account, jid) {

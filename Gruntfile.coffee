@@ -12,6 +12,7 @@ module.exports = (grunt) ->
                 files:
                     'extension/background.js': ['extension/lib/background.js']
                     'extension/injectxmpp.js': ['extension/lib/injectxmpp.js']
+                    'extension/db.js': ['extension/lib/db.js']
 
     grunt.loadNpmTasks 'grunt-browserify'
 

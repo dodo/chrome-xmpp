@@ -13,6 +13,17 @@ proto.on = function (event, listener)  {
     return this;
 };
 
+proto.off = function (event, listener) {
+    if (!listener) {
+        delete this._events[event];
+    } else if (this._events[event]) {
+        this._events[event] = this._events[event].filter(function (callback) {
+            return callback !== listener;
+        });
+    }
+    return this;
+}
+
 proto.emit = function (event/*, [args, …]*/) {
     if (this._events[event]) {
         var args = __slice.call(arguments, 1);
@@ -20,6 +31,7 @@ proto.emit = function (event/*, [args, …]*/) {
             listener.apply(this, args);
         }.bind(this));
     }
+    return this;
 };
 
 proto.send = function (event/*, [args, …]*/) {
@@ -32,6 +44,7 @@ proto.send = function (event/*, [args, …]*/) {
             ns:'chrome-xmpp',
         });
     }
+    return this;
 };
 
 proto.connect = function () {
@@ -49,12 +62,14 @@ proto.connect = function () {
             console.log("no appid", bg);
         };
     });
+    return this;
 };
 
 proto.dispatch = function (el) {
-    return el.dispatchEvent(new CustomEvent('BackPortLoaded', {
+    el.dispatchEvent(new CustomEvent('BackPortLoaded', {
         cancelable: true,
         bubbles: true,
         detail: this,
     }));
+    return this;
 };

@@ -1,48 +1,75 @@
-var backport;
+var db, backport;
 
 document.addEventListener('DOMContentLoaded', function () {
-//     var $ownid = document.createElement('div');
-//     $ownid.textContent = "my id: " + chrome.runtime.id;
-//     document.body.appendChild($ownid);
-    updateData();
-    if (localStorage['jid']) {
-        chrome.extension.sendRequest({type:'status', jid:localStorage['jid']}, function (res) {
-            res = res || {connected:false};
-            if (res.error) return document.body.textContent = res.error;
-            updateStatus(res);
-        });
-    } else updateStatus({connected:false});
     // connect directly to the packaged app
     backport = new BackPort('popup')
-        .on('update', function () {
-            // when data can change means client must be offline
-            updateData();
-            updateStatus({connected:false});
+        .on('add', createAccount)
+        .dispatch(document);
+
+    db = new Database('accounts', localStorage['accounts-version'])
+        .forEach(function (account) {
+            var doc = createAccount(account);
+            updateData(doc, account);
+            backport.on('update', function (id) {
+                if (account['id'] !== id) return;
+                // when data can change means client must be offline
+                updateData(doc, account);
+                updateStatus(doc, account, {connected:false});
+            });
+            backport.on('status', function (id, res) {
+                if (account['id'] !== id) return;
+                updateStatus(doc, account, res);
+            });
+            chrome.extension.sendRequest({type:'status', id:account.id}, function (res) {
+                res = res || {connected:false};
+                if (res.error) return console.error(res);
+                updateStatus(doc, account, res);
+            });
         })
-        .on('status', function (jid, res) {
-            if (jid === localStorage['jid'])
-                updateStatus(res);
-        });
-    backport.dispatch(document);
+    document.getElementById('empty').classList.remove('hidden');
 });
 
-function updateData() {
-    if (localStorage['jid']) {
-        document.getElementById('jid').textContent = localStorage['jid'];
-        document.getElementById('no-jid').classList.add('hidden');
+function createAccount(account) {
+    if (document.getElementById('empty'))
+        document.getElementById('empty').remove();
+    if (document.getElementById(account['id']))
+        return document.getElementById(account['id']);
+    var doc = document.getElementById('account').content.cloneNode(/*deep=*/true);
+    var main = document.querySelector('main');
+    updateData(doc, account);
+    updateStatus(doc, account, {connected:false});
+    main.appendChild(doc);
+    doc = main.querySelector('address:last-child');
+    doc.setAttribute('id', account['id']);
+    return doc;
+}
+
+function updateData(doc, account) {
+    var jid = doc.querySelector('.jid');
+    var nojid = doc.querySelector('.no-jid');
+    var resource = doc.querySelector('.resource');
+    nojid.setAttribute('href', "options.html?" + account.id + "#popup");
+    if (account['jid']) {
+        jid.textContent = account['jid'];
     } else {
-        document.getElementById('jid').textContent = "no jid";
-        document.getElementById('no-jid').classList.remove('hidden');
+        jid.textContent = "no jid";
+    }
+    if (account['jid'] && account['resource']) {
+        resource.textContent = "/" + account['resource'];
+    } else {
+        resource.textContent = "";
     }
 }
 
-function updateStatus(res) {
-    var online = document.getElementById('online');
-    var offline = document.getElementById('offline');
-    var connectButton = document.getElementById('connect');
-    var disconnectButton = document.getElementById('disconnect');
+function updateStatus(doc, account, res) {
+    var online = doc.querySelector('.online.status');
+    var offline = doc.querySelector('.offline.status');
+    var connectButton = doc.querySelector('button.connect');
+    var disconnectButton = doc.querySelector('button.disconnect');
+    connectButton.setAttribute('data-account', account.id);
+    disconnectButton.setAttribute('data-account', account.id);
     disconnectButton.disabled = connectButton.disabled = !!res.disabled;
-    if (localStorage['jid']) {
+    if (account['jid']) {
         if (res.connected) {
             online.classList.remove('hidden');
             offline.classList.add('hidden');

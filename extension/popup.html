@@ -3,8 +3,9 @@
   <head>
     <style>
       body {
-        min-width: 23em;
+        min-width: 32em;
         overflow-x: hidden;
+        margin-bottom: 4px;
       }
       nav {
         float: right;
@@ -13,36 +14,66 @@
       button {
         font-size: 0.9em;
       }
+      address {
+        font-style: normal;
+        min-height: 1.8em;
+      }
+      fieldset {
+        border: 0;
+        margin: 0;
+        padding: 0;
+      }
+      #empty {
+        min-height: 1.8em;
+        margin-bottom: 0.25em;
+      }
       .hidden {
         display: none;
       }
-      #jid {
-        font-size: 1.1em;
+      .jid {
         padding-left: 24px;
         background: url(favicon.png) no-repeat;
       }
+      .jid, .resource {
+        font-size: 1.1em;
+      }
+      .online {
+        color: rgb(0,206,0);
+      }
+      .offline {
+        color: rgb(206,0,0);
+      }
       .status {
+        float: right;
         font-weight: bold;
         font-size: 1.3em;
         font-family: monospace;
-      }
-      #online {
-        color: rgb(0,206,0);
-      }
-      #offline {
-        color: rgb(206,0,0);
+        margin-right: 1em;
       }
     </style>
 
   </head>
   <body>
-    <span id="jid"></span> &nbsp; <span id="online" class="hidden status">online</span><span id="offline" class="hidden status">offline</span>
-    <nav>
-      <button class="hidden" id="no-jid" href="options.html#popup">Options</button>
-      <button class="hidden" id="connect">connect</button>
-      <button class="hidden" id="disconnect">disconnect</button>
-    </nav>
+    <template id="account">
+      <address>
+        <span class="jid"></span><span class="resource"></span>
+        <nav>
+          <button class="hidden connect" data-account="">connect</button>
+          <button class="hidden disconnect" data-account="">disconnect</button>
+          <button class="no-jid" href="options.html#popup" title="Options">⚙</button>
+        </nav>
+        <span class="hidden online status">online</span>
+        <span class="hidden offline status">offline</span>
+      </address>
+    </template>
+    <main>
+      <nav id="empty" class="hidden">
+        No XMPP Accounts configured!
+        <button class="no-jid" href="options.html#popup" title="Options">⚙ Options</button>
+      </nav>
+    </main>
   </body>
+  <script src="db.js"></script>
   <script src="backport.js"></script>
   <script src="widget.js"></script>
   <script src="client.js"></script>

@@ -21,8 +21,8 @@ chrome.management.getAll(function (apps) {
             bgapp.id = null; // allow all ids
             bgapp.on('error', console.error.bind(console));
             bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
-            bgapp.on('status', function (jid, state) {
-                status[jid] = state;
+            bgapp.on('status', function (id, state) {
+                status[id] = state;
             });
         });
     };
@@ -57,7 +57,7 @@ actions.allow = function (request, sender) {
     if (!request.id) return;
     if (!pool[request.id]) return;
 
-    return pool[request.id].allow();
+    return pool[request.id].allow(request.account);
 }
 
 actions.deny = function (request, sender) {
@@ -68,9 +68,9 @@ actions.deny = function (request, sender) {
 }
 
 actions.status = function (request, sender) {
-    if (!request.jid) return;
+    if (!request.id) return;
 
-    return status[request.jid] || {connected:false};
+    return status[request.id] || {connected:false};
 };
 
 //------------------------------------------------------------------------------
@@ -102,23 +102,24 @@ Client.prototype.removeAllListeners = function removeAllListeners() {
     bgapp.removeListener('proxy', this._onproxy);
 };
 
-Client.prototype.allow = function allow() {
+Client.prototype.allow = function allow(account) {
     this.sendToTarget('allow', 'allowed');
-    this.attach();
+    this.attach(account);
 };
 
 Client.prototype.deny = function deny() {
     this.sendToTarget('error', 'access denied');
 };
 
-Client.prototype.attach = function attach() {
-    var opts = attachOptions(); // query localStorage
-    this.jid = opts.jid;
-    this.send('attach', opts);
+Client.prototype.attach = function attach(id) {
+    attachOptions(id, function (opts) {
+        this.id = opts.id;
+        this.send('attach', opts);
+    }.bind(this));
 };
 
 Client.prototype.detach = function detach() {
-    this.send('detach', {jid:this.jid});
+    this.send('detach', {id:this.id});
 }
 
 Client.prototype.request_permission = function request_permission() {

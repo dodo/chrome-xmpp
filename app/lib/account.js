@@ -12,7 +12,7 @@ module.exports = Client;
 function Client(opts) {
     var that = this;
     this.stayAlive = opts.cfg.stayAlive;
-    this.ids = {};
+    this.cids = {};
     this.connected = false;
     var fd = this.fd = new Lightstream({
         backend:require('lightstream/backend/node-xmpp'),
@@ -24,6 +24,7 @@ function Client(opts) {
 }
 
 Client.prototype.connect = function connect(opts) {
+    this.id = opts.id;
     this.jid = opts.jid;
     this.fulljid = opts.jid;
     if (opts.resource)
@@ -39,7 +40,7 @@ Client.prototype.disconnect = function disconnect() {
 
 Client.prototype.attach = function attach(opts) {
     var that = this;
-    var conn = this.ids[opts.id] = opts.connection;
+    var conn = this.cids[opts.cid] = opts.connection;
     conn.on('call', function (method) {
         var part = method.split('.');
         var args = __slice.call(arguments, 1); // no method
@@ -59,7 +60,7 @@ Client.prototype.attach = function attach(opts) {
         }
     });
     conn.on('listen', function (event) {
-        // TODO filter ids for permissions
+        // TODO filter cids for permissions
         that.fd.on(event, conn.send.bind(conn, event));
     });
     if (this.connected) process.nextTick(function () {
@@ -69,18 +70,18 @@ Client.prototype.attach = function attach(opts) {
 };
 
 Client.prototype.detach = function detach(opts) {
-    if (!this.ids[opts.id]) return;
-    this.ids[opts.id].removeAllListeners();
-    delete this.ids[opts.id];
-    if (!this.stayAlive && Object.keys(this.ids).length === 0)
+    if (!this.cids[opts.cid]) return;
+    this.cids[opts.cid].removeAllListeners();
+    delete this.cids[opts.cid];
+    if (!this.stayAlive && Object.keys(this.cids).length === 0)
         this.disconnect();
     return this;
 };
 
 Client.prototype.send = function send(/*[event, args…]*/) {
     var args = __slice.call(arguments);
-    Object.keys(this.ids).forEach(function (id) {
-        var conn = this.ids[id];
+    Object.keys(this.cids).forEach(function (cid) {
+        var conn = this.cids[cid];
         conn.send.apply(conn, args);
     }.bind(this));
 };

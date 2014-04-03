@@ -15,16 +15,26 @@
         display: inline-block;
         float: right;
       }
+      .hidden {
+        display: none;
+      }
     </style>
   </head>
   <body>
     <div id="wrap">
-      <span>This Website wants to use your Jabber ID.</span>
+      <span id="select">
+        <span>This Website wants to use one of your Jabber Accounts:</span>
+        <select id="accounts"></select>
+      </span>
+      <span id="no-accounts" class="hidden">
+        No Account configured!
+      </span>
       <nav>
         <button id="allow">Allow</button>
         <button id="deny">Deny</button>
       </nav>
     </div>
+    <script src="db.js"></script>
     <script src="infobar.js"></script>
   </body>
 </html>

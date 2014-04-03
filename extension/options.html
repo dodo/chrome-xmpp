@@ -6,17 +6,27 @@
     <link rel="stylesheet" href="css/widgets.css">
     <style>
     body {
-      -webkit-margin-start: 155px;
       color: rgb(48, 57, 66);
-      -webkit-margin-end: 24px;
-      min-width: 576px;
-      padding-bottom: 20px;
+      min-width: 612px;
+    }
+    button {
+      min-width: 0 !important;
+    }
+    main {
       padding-top: 55px;
     }
-    body > nav {
+    .main {
+      padding-bottom: 20px;
+    }
+    main, .main {
+      -webkit-margin-start: 88px;
+      -webkit-margin-end: 24px;
+    }
+    address > nav {
       position: absolute;
       right: 0.6em;
-      top: 0.6em;
+      margin-top: -4em;
+/*       top: 0.6em; */
       z-index: 2;
     }
     h1, h2, h3, h4, h5, h6 {
@@ -25,130 +35,158 @@
     fieldset {
       border: none;
     }
+    var, address {
+      font-style: normal;
+    }
+    address {
+      margin-bottom: 10em;
+    }
+    address.new:hover * {
+      cursor: pointer;
+    }
+    address.new:hover input {
+      border-color: rgb(77, 144, 254);
+    }
     strong {
-        font-size: 1.8em;
-        font-weight: normal;
+      font-size: 1.8em;
+      font-weight: normal;
     }
     header:before {
-        position: absolute;
-        font-weight: bold;
-        font-size: 10em;
-        color: white;
-        text-shadow: 0 0 1em #ddd;
-        margin-left: -0.45em;
-        margin-top: -0.48em;
-        z-index: -1;
+      position: absolute;
+      font-weight: bold;
+      font-size: 10em;
+      color: white;
+      text-shadow: 0 0 1em #ddd;
+      margin-left: -0.45em;
+      margin-top: -0.48em;
+      z-index: -1;
     }
     .left {
-        float: left;
+      float: left;
     }
     .right {
-        margin-left: 20em;
-        margin-bottom: 5em;
+      margin-left: 20em;
+      margin-bottom: 5em;
     }
     .account header:before {
-        content: "℀";
+      content: "℀";
     }
     .params header:before {
-        content: "⚙";
+      content: "⚙";
     }
     .config header:before {
-        content: "⚑";
+      content: "⚑";
     }
     .hidden {
       display: none;
     }
     .disabled {
-        opacity: 0.32;
+      opacity: 0.32;
     }
     .comment {
-        font-size: 0.8em;
-        color: #aaa;
-        margin-top: -1em;
+      font-size: 0.8em;
+      color: #aaa;
+      margin-top: -1em;
     }
-    #status {
-        top: 0;
-        left: 0;
-        position: fixed;
-        width: 100%;
-        padding: 0.2em 1em 0.2em 1em;
-        text-shadow: 0 0 0.2em white;
-        transition: background-color 2s;
-        font-size: 2em;
-        font-weight: bolder;
-        color: white;
-        z-index: 1;
+    .status {
+      left: 0;
+      position: absolute;
+      width: 100%;
+      margin-top: -2.3em;
+      text-shadow: 0 0 0.2em white;
+      transition: background-color 2s;
+      font-size: 2em;
+      font-weight: bolder;
+      color: white;
+      z-index: 1;
     }
-    .online#status {
-        background-color: rgba(0,206,0,0.5);
+    .online.status {
+      background-color: rgba(0,206,0,0.5);
     }
-    .offline#status {
-        background-color: rgba(206,0,0,0.5);
+    .offline.status {
+      background-color: rgba(206,0,0,0.5);
+    }
+    .status var, .status aside {
+      padding: 0.2em 0 0.2em 1em;
+      display: inline-block;
+    }
+    address.new:hover .status {
+      background-color: rgba(206,206,206,0.5);
+    }
+    address.new:hover .disabled {
+      opacity: 0.42;
+    }
+    button.accept.delete {
+      background: red !important;
+      color: white !important;
     }
     </style>
 
   </head>
   <body>
-  <nav>
-    <button class="hidden" id="connect">connect</button>
-    <button class="hidden" id="disconnect">disconnect</button>
-    <button class="hidden" id="back" href="popup.html">back</button>
-  </nav>
-  <header id="status" class="hidden"></header>
 
-  <fieldset class="disabled left account">
-    <header>
-      <h1>Jabber ID</h1>
-    </header>
+  <template id="jid">
+    <address>
+      <nav>
+        <button class="hidden connect">connect</button>
+        <button class="hidden disconnect">disconnect</button>
+        <button class="hidden accept delete" title="accept delete">delete</button>
+        <button class="hidden cancel delete" title="cancel delete">cancel</button>
+        <button class="hidden query  delete" title="delete">✖</button>
+        <button class="hidden back" href="popup.html">back</button>
+      </nav>
+      <header class="hidden status">
+        <var></var>
+        <aside></aside>
+      </header>
 
-    <p>
-    <input type="text" id="jid" placeholder="user@domain.tld" title="jid" disabled="disabled">
-    </p>
+      <fieldset class="disabled left account">
+        <header>
+          <h1>Jabber ID</h1>
+        </header>
+        <p>
+          <input type="text" name="jid" placeholder="user@domain.tld" title="jid" disabled="disabled">
+        </p>
+        <p>
+          <input type="password" name="pw" placeholder="password" title="password" disabled="disabled">
+        </p>
+        <nav>
+          <button class="save-jid" disabled="disabled">Save</button>
+          <span class="status-jid"></span>
+        </nav>
+      </fieldset>
 
-    <p>
-    <input type="password" id="pw" placeholder="password" title="password" disabled="disabled">
-    </p>
+      <fieldset class="disabled right params">
+        <header>
+          <h3>Parameter</h3>
+        </header>
+        <p>
+          <strong style="margin-left:-0.5em"> / </strong><input type="text" name="resource" placeholder="{random resource}" title="JID resource. leave blank for random resource." disabled="disabled">
+        </p>
+        <p>
+          <input type="text" name="host" placeholder="host" title="server host to connect to" disabled="disabled"><strong> : </strong><input type="text" name="port" placeholder="5222" title="server port to connect to" size="5" disabled="disabled">
+        </p>
+        <p>
+          <input type="text" name="preferred" placeholder="DIGEST-MD5" title="preferred SASL Mechanism" disabled="disabled">
+          <div class="comment">Available: ANONYMOUS, PLAIN, DIGEST-MD5</div>
+        </p>
+        <p>
+          <label for="reconnect" title="try to reconnect when connection disconnects"><input type="checkbox" name="reconnect" disabled="disabled"> reconnect</label>
+        </p>
+        <nav>
+          <button class="save-jid-params" disabled="disabled">Save</button>
+          <span class="status-jid-params"></span>
+        </nav>
+      </fieldset>
+    </address>
+  </template>
 
-    <nav>
-      <button id="save-jid" disabled="disabled">Save</button>
-      <span id="status-jid"></span>
-    </nav>
-  </fieldset>
+  <main id="accounts"></main>
 
-  <fieldset class="disabled right params">
-    <header>
-      <h3>Parameter</h3>
-    </header>
-
-    <p>
-    <strong style="margin-left:-0.5em"> / </strong><input type="text" id="resource" placeholder="{random resource}" title="JID resource. leave blank for random resource." disabled="disabled">
-    </p>
-
-    <p>
-    <input type="text" id="host" placeholder="host" title="server host to connect to" disabled="disabled"><strong> : </strong><input type="text" id="port" placeholder="5222" title="server port to connect to" size="5" disabled="disabled">
-    </p>
-
-    <p>
-    <input type="text" id="preferred" placeholder="DIGEST-MD5" title="preferred SASL Mechanism" disabled="disabled">
-    <div class="comment">Available: ANONYMOUS, PLAIN, DIGEST-MD5</div>
-    </p>
-
-    <p>
-    <label for="reconnect" title="try to reconnect when connection disconnects"><input type="checkbox" id="reconnect" disabled="disabled"> reconnect</label>
-    </p>
-
-    <nav>
-      <button id="save-jid-params" disabled="disabled">Save</button>
-      <span id="status-jid-params"></span>
-    </nav>
-  </fieldset>
-
-
-  <fieldset class="disabled config">
+  <fieldset class="main disabled config">
     <header>
       <h1>Settings</h1>
     </header>
-
     <p>
       <h3><i>Extensions</i></h3>
     <label for="plugin-Presence" title="Presence"><input type="checkbox" class="plugin" id="plugin-Presence" disabled="disabled"> Presence &nbsp; </label>
@@ -159,14 +197,14 @@
     <label for="plugin-VCard" title="VCard"><input type="checkbox" class="plugin" id="plugin-VCard" disabled="disabled"> VCard &nbsp; </label>
     <label for="plugin-Roster" title="Roster"><input type="checkbox" class="plugin" id="plugin-Roster" disabled="disabled"> Roster &nbsp; </label>
     </p>
-
     <nav>
-      <button id="save-config" disabled="disabled">Save</button>
-      <span id="status-config"></span>
+      <button class="save-config" disabled="disabled">Save</button>
+      <span class="status-config"></span>
     </nav>
   </fieldset>
 
   </body>
+<script src="db.js"></script>
 <script src="backport.js"></script>
 <script src="options.js"></script>
 <script src="widget.js"></script>
