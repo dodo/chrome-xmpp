@@ -10,17 +10,19 @@ var Client = require('./pool');
 var accounts = {};
 var pool = {}; // of each extension connection
 var frontend;
-var popup = new Connection({id:'popup'});
+var action = {
+    browser: new Connection({id:'browseraction'}),
+};
 var options = {
-    popup:  new Connection({id:'popup-options'}),
-    tab:    new Connection({id:'tab-options'}),
+    browseraction: new Connection({id:'browseraction-options'}),
+    tab:           new Connection({id:'tab-options'}),
 };
 
 chrome.app.runtime.onLaunched.addListener(function() {
     frontend = new Repeater()
-        .pipe(options.popup)
+        .pipe(options.browseraction)
         .pipe(options.tab)
-        .pipe(popup);
+        .pipe(action.browser);
 
     chrome.notifications.create("onLaunched", {
         title: "XMPP Background Gears",
@@ -35,12 +37,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
 
 chrome.runtime.onConnectExternal.addListener(function (port) {
+    console.log(port)
     if (port.name === 'tab-options') {
         options.tab.bind(port);
-    } else if (port.name === 'popup-options') {
-        options.popup.bind(port);
-    } else if (port.name === 'popup') {
-        popup.bind(port);
+    } else if (port.name === 'browseraction-options') {
+        options.browseraction.bind(port);
+    } else if (port.name === 'browseraction') {
+        action.browser.bind(port);
     } else {
         var client = new Client(port, accounts, frontend);
         pool[client.id] = client;

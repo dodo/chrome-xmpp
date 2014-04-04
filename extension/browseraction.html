@@ -18,11 +18,6 @@
         font-style: normal;
         min-height: 1.8em;
       }
-      fieldset {
-        border: 0;
-        margin: 0;
-        padding: 0;
-      }
       #empty {
         min-height: 1.8em;
         margin-bottom: 0.25em;
@@ -60,7 +55,7 @@
         <nav>
           <button class="hidden connect" data-account="">connect</button>
           <button class="hidden disconnect" data-account="">disconnect</button>
-          <button class="no-jid" href="options.html#popup" title="Options">⚙</button>
+          <button class="options" href="options.html#browseraction" title="Options">⚙</button>
         </nav>
         <span class="hidden online status">online</span>
         <span class="hidden offline status">offline</span>
@@ -69,7 +64,7 @@
     <main>
       <nav id="empty" class="hidden">
         No XMPP Accounts configured!
-        <button class="no-jid" href="options.html#popup" title="Options">⚙ Options</button>
+        <button class="options" href="options.html#browseraction" title="Options">⚙ Options</button>
       </nav>
     </main>
   </body>
@@ -77,6 +72,6 @@
   <script src="backport.js"></script>
   <script src="widget.js"></script>
   <script src="client.js"></script>
-  <script src="popup.js"></script>
+  <script src="browseraction.js"></script>
 </html>
 

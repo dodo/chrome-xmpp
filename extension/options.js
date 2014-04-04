@@ -1,10 +1,10 @@
 var __slice = Array.prototype.slice;
 var __indexOf = Array.prototype.indexOf;
-var isPopup, db, backport;
+var isBrowseraction, db, backport;
 var accountsCounter = {};
 
 document.addEventListener('DOMContentLoaded', function restore() {
-    isPopup = self.location.hash === '#popup';
+    isBrowseraction = self.location.hash === '#browseraction';
 
     if (!localStorage['plugins']) {
         plugins = __slice.call(
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function restore() {
         localStorage['plugins'] = JSON.stringify(plugins);
     }
     // connect directly to the packaged app
-    backport = new BackPort((isPopup ? 'popup' : 'tab') + '-options')
+    backport = new BackPort((isBrowseraction ? 'browseraction' : 'tab') + '-options')
         .on('add', createAccount)
         .dispatch(document);
 
@@ -26,8 +26,11 @@ document.addEventListener('DOMContentLoaded', function restore() {
     db = new Database('accounts', localStorage['accounts-version'])
         .forEach(range, function (account) {
             var doc = createAccount(account);
-            if (isPopup)
-                doc.querySelector('button.back').classList.remove('hidden');
+            if (isBrowseraction) {
+                var back = doc.querySelector('button.back');
+                back.classList.remove('hidden');
+                back.setAttribute('href', "browseraction.html");
+            }
             updateData(doc, account);
         }, addNewAccountButton)
 });
@@ -164,8 +167,11 @@ function addNewAccountButton() {
     el.addEventListener('click', onClick);
     el.querySelector('.status aside').textContent = "create Account";
     el.querySelector('.status').classList.remove('hidden');
-    if (isPopup)
-        el.querySelector('button.back').classList.remove('hidden');
+    if (isBrowseraction) {
+        var back = el.querySelector('button.back');
+        back.classList.remove('hidden');
+        back.setAttribute('href', "browseraction.html");
+    }
     document.getElementById('accounts').appendChild(doc);
     el = document.querySelector('#accounts > address:last-child');
     return el;

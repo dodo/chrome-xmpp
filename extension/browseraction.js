@@ -2,7 +2,7 @@ var db, backport;
 
 document.addEventListener('DOMContentLoaded', function () {
     // connect directly to the packaged app
-    backport = new BackPort('popup')
+    backport = new BackPort('browseraction')
         .on('add', createAccount)
         .dispatch(document);
 
@@ -46,9 +46,9 @@ function createAccount(account) {
 
 function updateData(doc, account) {
     var jid = doc.querySelector('.jid');
-    var nojid = doc.querySelector('.no-jid');
+    var options = doc.querySelector('.options');
     var resource = doc.querySelector('.resource');
-    nojid.setAttribute('href', "options.html?" + account.id + "#popup");
+    options.setAttribute('href', "options.html?" + account.id + "#browseraction");
     if (account['jid']) {
         jid.textContent = account['jid'];
     } else {
