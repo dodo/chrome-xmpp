@@ -39,7 +39,7 @@ function createAccount(account) {
     updateData(doc, account);
     updateStatus(doc, account, {connected:false});
     main.appendChild(doc);
-    doc = main.querySelector('address:last-child');
+    doc = main.lastElementChild;
     doc.setAttribute('id', account['id']);
     return doc;
 }

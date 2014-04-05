@@ -133,8 +133,9 @@ function createAccount(account, docElement) {
     });
 
     if (!docElement) {
-        document.getElementById('accounts').appendChild(doc);
-        doc = document.querySelector('#accounts > address:last-child');
+        var accounts = document.getElementById('accounts')
+        accounts.appendChild(doc);
+        doc = accounts.lastElementChild;
     }
     doc.setAttribute('id', account['id']);
     return doc;
