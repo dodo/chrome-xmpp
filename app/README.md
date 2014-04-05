@@ -1,7 +1,5 @@
 
-### chrome packaged app
+### XMPP - core (chrome packaged app)
 
-``` bash
-npm install .
-```
-… before loading it as unpacked extension into your chromium/chrome.
+
+load it as unpacked extension into your chromium/chrome.
