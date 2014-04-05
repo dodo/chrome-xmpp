@@ -186,10 +186,21 @@ function createPlugin(appid) {
     });
 }
 
+function updateBadge(tabid) {
+    var accountCount = Object.keys(tabs).filter(function (id) {
+        return tabs[id].id == tabid;
+    }).length;
+    chrome.browserAction.setBadgeText({
+        tabId:tabid,
+        text: accountCount ? ""+accountCount : "",
+    });
+}
+
 function updateTab(aid, status) {
     if (!aid) return;
     var tab = tabs[aid];
     if (!tab) return;
+    updateBadge(tab.id);
     Object.keys(plugins).forEach(function (id) {
         plugins[id].send('status', {
             connected:status.connected,
@@ -207,6 +218,7 @@ function removeTab(aid) {
     var tab = tabs[aid];
     if (!tab) return;
     delete tabs[aid];
+    updateBadge(tab.id);
     Object.keys(plugins).forEach(function (id) {
         plugins[id].send('status', {
             purge:true,
