@@ -5,6 +5,7 @@
  * …
  */
 var util = require('util');
+var ChromeEventEmitter = require('domevents').EventEmitter;
 var Connection = require('../../lib/connection');
 var attachOptions = require('../client');
 
@@ -20,26 +21,41 @@ chrome.management.getAll(function (apps) {
             bgapp = new Connection();
             bgapp.id = null; // allow all ids
             bgapp.on('error', console.error.bind(console));
-            bgapp.listen(chrome.runtime.connect(bgappid), {name:bgapp.id});
+            bgapp.listen(chrome.runtime.connect(bgappid, {name:bgappid}));
             bgapp.on('status', function (id, state) {
                 status[id] = state;
+            });
+            bgapp.on('launch', function () {
+                var enabled = true;
+                return toggle(11);
+
+                function toggle(i) {
+                    if (enabled)
+                        chrome.browserAction.disable();
+                    else
+                        chrome.browserAction.enable();
+                    enabled = !enabled;
+                    if (i--) setTimeout(toggle.bind(this, i), 100);
+                }
             });
         });
     };
 });
 
 // for infobar
-chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
+new ChromeEventEmitter(chrome.extension).setMode('ext')
+.on('request', function (request, sender, sendResponse) {
     var action = function () {return {error:request.type + " not an action"}};
     if (actions[request.type])
         action = actions[request.type];
     sendResponse(action(request, sender));
 });
 
-chrome.runtime.onConnect.addListener(function (port) {
+new ChromeEventEmitter(chrome.runtime).setMode('ext')
+.on('connect', function (port) {
     var client = new Client(port);
     pool[client.id] = client;
-    port.onDisconnect.addListener(function () {
+    new ChromeEventEmitter(port).setMode('ext').on('disconnect', function () {
         client.removeAllListeners();
         delete pool[client.id];
     });
@@ -58,14 +74,14 @@ actions.allow = function (request, sender) {
     if (!pool[request.id]) return;
 
     return pool[request.id].allow(request.account);
-}
+};
 
 actions.deny = function (request, sender) {
     if (!request.id) return;
     if (!pool[request.id]) return;
 
     return pool[request.id].deny();
-}
+};
 
 actions.status = function (request, sender) {
     if (!request.id) return;
@@ -120,7 +136,7 @@ Client.prototype.attach = function attach(id) {
 
 Client.prototype.detach = function detach() {
     this.send('detach', {id:this.id});
-}
+};
 
 Client.prototype.request_permission = function request_permission() {
     chrome.infobars.show({

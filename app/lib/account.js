@@ -31,12 +31,12 @@ Client.prototype.connect = function connect(opts) {
         this.fulljid += "/" + opts.resource;
     this.fd.connect(this.fulljid, opts.password, opts.params);
     return this;
-}
+};
 
 Client.prototype.disconnect = function disconnect() {
     this.fd.disconnect();
     return this;
-}
+};
 
 Client.prototype.attach = function attach(opts) {
     var that = this;

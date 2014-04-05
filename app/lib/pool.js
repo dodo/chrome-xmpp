@@ -66,7 +66,7 @@ Client.prototype.emit = function emit(event/*, [args,…]*/) {
 Client.prototype.send = function send(id, event /*, [args…]*/) {
     var args = __slice.call(arguments, 1); // dont send id
     var data = args.map(jsonify);
-    if (event === 'status') {
+    if (event === 'status' || id === 'frontend') {
         // multiplex over to the frontend pages
         this.frontend.send.apply(this.frontend, args);
     }
@@ -122,10 +122,10 @@ Client.prototype.createAccount = function (opts) {
 Client.prototype.deleteAccount = function (account) {
     this.accounts[account.id].disconnect();
     delete this.accounts[account.id];
-}
+};
 
-function updateStatus(account, jid) {
-    this.send('frontend', 'status', jid, {connected:account.connected});
+function updateStatus(account, id) {
+    this.send('frontend', 'status', id, {connected:account.connected});
 }
 
 function jsonify(arg) {
