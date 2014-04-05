@@ -108,23 +108,8 @@ function createAccount(account, docElement) {
         updateStatus(doc, account, res);
     });
 
-
-    doc.querySelector('.query.delete').classList.remove('hidden');
-    doc.querySelector('.query.delete').addEventListener('click', function (ev) {
-        ev.target.classList.add('hidden');
-        doc.querySelector('.accept.delete').classList.remove('hidden');
-        doc.querySelector('.cancel.delete').classList.remove('hidden');
-    });
-    doc.querySelector('.cancel.delete').addEventListener('click', function (ev) {
-        ev.target.classList.add('hidden');
-        doc.querySelector('.accept.delete').classList.add('hidden');
-        doc.querySelector('.query.delete').classList.remove('hidden');
-    });
-    doc.querySelector('.accept.delete').addEventListener('click', function (ev) {
+    confirmProcess(doc, 'delete', function () {
         disableAll(doc, account);
-        __slice.call(doc.querySelectorAll('button')).forEach(function (button) {
-            button.disable = true;
-        });
         backport.off('update', onupdate);
         backport.off('status', onstatus);
         remove(account.id, function () {

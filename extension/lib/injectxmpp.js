@@ -43,6 +43,10 @@ proto.disconnect = function () {
     return this.send('disconnect');
 };
 
+proto.remove     = function () {
+    return this.send('remove permission');
+};
+
 //------------------------------------------------------------------------------
 
 window.testXMPP = function () {

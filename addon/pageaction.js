@@ -1,5 +1,5 @@
 var id = window.location.hash.substring(1);
-var backport, accounts = {};
+var backport;
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function updateAccounts(res) {
     var  doc = document.getElementById(res.accountId);
+    if (res.purge) {
+        if (doc) doc.remove();
+        return;
+    }
     if (!doc) {
         var main = document.querySelector('main');
         doc = document.getElementById('jid').content.cloneNode(/*deep=*/true);
@@ -26,6 +30,18 @@ function updateAccounts(res) {
         main.appendChild(doc);
         doc = main.lastElementChild;
         doc.setAttribute('id', res.accountId);
+        confirmProcess(doc, 'removal', function () {
+            chrome.extension.sendRequest({
+                type:'remove permission',
+                id:res.accountId,
+            }, function (res) {
+                if (res && res.error) return console.error(res);
+                doc.remove();
+                if (!main.querySelectorAll('address').length)
+                    window.close();
+            });
+
+        });
     } else {
         updateStatus(doc, res);
     }

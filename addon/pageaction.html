@@ -3,7 +3,7 @@
   <head>
     <style>
       body {
-        min-width: 32em;
+        min-width: 42em;
         overflow-x: hidden;
         margin-bottom: 4px;
       }
@@ -45,6 +45,10 @@
         font-family: monospace;
         margin-right: 1em;
       }
+      button.accept.removal {
+        background: red !important;
+        color: white !important;
+      }
     </style>
 
   </head>
@@ -55,6 +59,9 @@
         <nav>
           <button class="hidden connect" data-account="">connect</button>
           <button class="hidden disconnect" data-account="">disconnect</button>
+          <button class="hidden accept removal" title="accept removing permission">remove permission</button>
+          <button class="hidden cancel removal" title="cancel removing permission">cancel</button>
+          <button class="       query  removal" title="remove permission">✖</button>
         </nav>
         <span class="hidden online status">online</span>
         <span class="hidden offline status">offline</span>

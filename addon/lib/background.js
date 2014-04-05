@@ -11,27 +11,30 @@ gears.id = chrome.runtime.id;
 var status = {}, actions = {}, pool = {};
 
 gears.on('status', function (state) {
+    var accounts = Object.keys(status).filter(function (id) {
+        return status[id].tabId == state.tabId;
+    });
+    if (pool[state.tabId])
+        pool[state.tabId].send('status', state);
     if (state.purge) {
-        chrome.pageAction.hide(state.tabId);
+        if (accounts.length < 2)
+            chrome.pageAction.hide(state.tabId);
         delete status[state.accountId];
         return;
     }
+    var isOnline = state.connected || accounts.filter(function (id) {
+        return status[id].connected;
+    }).length;
     status[state.accountId] = state;
-    var isOnline = state.connected || Object.keys(status).filter(function (id) {
-        return status[id].tabId == state.tabId && status[id].connected;
-    }).length > 0;
     chrome.pageAction.setPopup({
         tabId:state.tabId,
         popup:'pageaction.html#'+state.tabId,
     });
     chrome.pageAction.setIcon({
         tabId:state.tabId,
-        path:isOnline ? 'online.png' : 'offline.png',
+        path: isOnline ? 'online.png' : 'offline.png',
     });
     chrome.pageAction.show(state.tabId);
-
-    if (pool[state.tabId])
-        pool[state.tabId].send('status', state);
 });
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
@@ -63,19 +66,14 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
  * pageaction callbacks
  */
 
-actions.connect = function (request, sender) {
-    if (!request.id) return;
-    if (!status[request.id]) return;
+['connect', 'disconnect', 'remove permission'].forEach(function (action) {
+    actions[action] = function (request, sender) {
+        if (!request.id) return;
+        if (!status[request.id]) return;
 
-    gears.send('connect', status[request.id].accountId);
-};
-
-actions.disconnect = function (request, sender) {
-    if (!request.id) return;
-    if (!status[request.id]) return;
-
-    gears.send('disconnect', status[request.id].accountId);
-};
+        gears.send(action, status[request.id].accountId);
+    };
+});
 
 actions.status = function (request, sender) {
     if (!request.tabId) return;

@@ -62,11 +62,8 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connect', function (port) {
     var client = new Client(port);
     pool[client.id] = client;
-    new ChromeEventEmitter(port).setMode('ext').on('disconnect', function () {
-        client.removeAllListeners();
-        delete pool[client.id];
-        removeTab(client.aid);
-    });
+    new ChromeEventEmitter(port).setMode('ext')
+        .on('disconnect', client.disconnect.bind(client));
 });
 
 self.getAppID = function getAppID() {
@@ -113,6 +110,7 @@ function Client(port) {
 
 Client.prototype.setupListeners = function setupListeners() {
     this.on('request permission', this.request_permission.bind(this));
+    this.on( 'remove permission', this.remove_permission.bind(this));
     this.on('disconnect', this.detach.bind(this));
     // proxy in both directions
     bgapp.on('proxy', this._onproxy = this.sendToTarget.bind(this));
@@ -125,6 +123,14 @@ Client.prototype.removeAllListeners = function removeAllListeners() {
     Connection.prototype.removeAllListeners.apply(this,[].slice.call(arguments));
     bgapp.removeListener('proxy', this._onproxy);
 };
+
+Client.prototype.disconnect = function disconnect() {
+    if (this.source)
+        this.source.disconnect();
+    this.removeAllListeners();
+    delete pool[this.id];
+    removeTab(this.aid);
+}
 
 Client.prototype.allow = function allow(accountid) {
     this.sendToTarget('allow', 'allowed');
@@ -164,26 +170,44 @@ Client.prototype.request_permission = function request_permission() {
     });
 };
 
+Client.prototype.remove_permission = function remove_permission() {
+    this.detach();
+    this.deny();
+};
+
 
 
 function createPlugin(appid) {
-    var plugin = new Connection({id:appid});
-    plugin.on('error', console.error.bind(console, '[plugin ' + appid + ' error]'));
-    plugin.bind(chrome.runtime.connect(appid, {name:appid}));
-    plugins[plugin.id] = plugin;
-    plugin.on('connect', function (aid) {
-        if (!aid) return;
-        Object.keys(pool).forEach(function (id) {
-            if (pool[id].aid == aid)
-                pool[id].getAttachOptions(aid, function (opts) {
-                    backend.send('connect', opts);
-                });
-        });
-    });
-    plugin.on('disconnect', function (aid) {
-        if (!aid) return;
-        backend.send('disconnect', {id:aid});
-    });
+    plugins[appid] = new Connection({id:appid})
+        .on('error', console.error.bind(console, '[plugin ' + appid + ' error]'))
+        .on('connect', function (aid) {
+            if (!aid) return;
+            Object.keys(pool).forEach(function (id) {
+                if (pool[id].aid == aid)
+                    pool[id].getAttachOptions(aid, function (opts) {
+                        backend.send('connect', opts);
+                    });
+            });
+        })
+        .on('disconnect', function (aid) {
+            if (!aid) return;
+            backend.send('disconnect', {id:aid});
+        })
+        .on('request permission', function (aid) {
+            if (!aid) return;
+            Object.keys(pool).forEach(function (id) {
+                if (pool[id].aid == aid)
+                    pool[id].request_permission();
+            });
+        })
+        .on('remove permission', function (aid) {
+            if (!aid) return;
+            Object.keys(pool).forEach(function (id) {
+                if (pool[id].aid == aid)
+                    pool[id].remove_permission();
+            });
+        })
+        .bind(chrome.runtime.connect(appid, {name:appid}));
 }
 
 function updateBadge(tabid) {

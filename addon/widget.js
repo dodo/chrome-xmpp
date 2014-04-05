@@ -54,3 +54,22 @@ function observe(el, select, iter) {
     observers.push(observer);
     return observer;
 }
+
+function confirmProcess(doc, cls, success) {
+    var reset;
+    doc.querySelector('.query.'+cls).classList.remove('hidden');
+    doc.querySelector('.query.'+cls).addEventListener('click', function (ev) {
+        ev.target.classList.add('hidden');
+        doc.querySelector('.accept.'+cls).classList.remove('hidden');
+        doc.querySelector('.cancel.'+cls).classList.remove('hidden');
+    });
+    doc.querySelector('.cancel.'+cls).addEventListener('click', reset = function (ev) {
+        ev.target.classList.add('hidden');
+        doc.querySelector('.accept.'+cls).classList.add('hidden');
+        doc.querySelector('.query.'+cls).classList.remove('hidden');
+    });
+    doc.querySelector('.accept.'+cls).addEventListener('click', function (ev) {
+        reset(ev);
+        if (success) success();
+    });
+}
