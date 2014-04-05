@@ -10,6 +10,7 @@ var Connection = require('../../lib/connection');
 var attachOptions = require('../client');
 
 var bgapp, bgappid, actions = {}, pool = {}, status = {};
+chrome.browserAction.disable();
 chrome.management.getAll(function (apps) {
     if(apps.some(function (app) {
         if(app.type !== 'packaged_app') return;
@@ -26,8 +27,8 @@ chrome.management.getAll(function (apps) {
                 status[id] = state;
             });
             bgapp.on('launch', function () {
-                var enabled = true;
-                return toggle(11);
+                var enabled = false;
+                return toggle(16);
 
                 function toggle(i) {
                     if (enabled)
@@ -35,7 +36,7 @@ chrome.management.getAll(function (apps) {
                     else
                         chrome.browserAction.enable();
                     enabled = !enabled;
-                    if (i--) setTimeout(toggle.bind(this, i), 100);
+                    if (i--) setTimeout(toggle.bind(this, i), 80);
                 }
             });
         });
