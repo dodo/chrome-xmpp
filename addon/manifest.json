@@ -1,0 +1,17 @@
+{"name": "XMPP - page action",
+ "description": "The missing XMPP Gear for Browsers",
+ "version": "0.0.0",
+
+ "manifest_version": 2,
+ "icons": {
+   "16": "favicon.png",
+   "64": "icon.png"
+ },
+ "page_action": {
+   "default_title": "XMPP Account",
+   "default_icon": "offline.png"
+ },
+  "background" : {
+    "scripts": ["background.js"]
+ }
+}

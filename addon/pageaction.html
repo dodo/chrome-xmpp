@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        min-width: 32em;
+        overflow-x: hidden;
+        margin-bottom: 4px;
+      }
+      nav {
+        float: right;
+        margin-top: -0.25em;
+      }
+      button {
+        font-size: 0.9em;
+      }
+      address {
+        font-style: normal;
+        min-height: 1.8em;
+      }
+      #empty {
+        min-height: 1.8em;
+        margin-bottom: 0.25em;
+      }
+      .hidden {
+        display: none;
+      }
+      .jid {
+        padding-left: 24px;
+        background: url(favicon.png) no-repeat;
+      }
+      .jid, .resource {
+        font-size: 1.1em;
+      }
+      .online {
+        color: rgb(0,206,0);
+      }
+      .offline {
+        color: rgb(206,0,0);
+      }
+      .status {
+        float: right;
+        font-weight: bold;
+        font-size: 1.3em;
+        font-family: monospace;
+        margin-right: 1em;
+      }
+    </style>
+
+  </head>
+  <body>
+    <template id="jid">
+      <address>
+        <span class="jid"></span><span class="resource"></span>
+        <nav>
+          <button class="hidden connect" data-account="">connect</button>
+          <button class="hidden disconnect" data-account="">disconnect</button>
+        </nav>
+        <span class="hidden online status">online</span>
+        <span class="hidden offline status">offline</span>
+      </address>
+    </template>
+
+    <main></main>
+
+  </body>
+  <script src="backport.js"></script>
+  <script src="widget.js"></script>
+  <script src="pageaction.js"></script>
+</html>
+
