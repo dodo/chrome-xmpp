@@ -11,7 +11,8 @@ var Client = require('./pool');
 var accounts = {};
 var pool = {}; // of each extension connection
 var action = {
-    browser: new Connection({id:'browseraction'}),
+    extension: new Connection({id:'extension'}),
+    browser:   new Connection({id:'browseraction'}),
 };
 var options = {
     browseraction: new Connection({id:'browseraction-options'}),
@@ -22,6 +23,7 @@ process.nextTick(function () {
     frontend = new Repeater()
         .pipe(options.browseraction)
         .pipe(options.tab)
+        .pipe(action.extension)
         .pipe(action.browser)
 });
 
@@ -57,6 +59,8 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
         options.browseraction.bind(port);
     } else if (port.name === 'browseraction') {
         action.browser.bind(port);
+    } else if (port.name === 'extension') {
+        action.extension.bind(port);
     } else if (port.name === chrome.runtime.id) {
         var client = new Client(port, accounts, frontend);
         pool[client.id] = client;

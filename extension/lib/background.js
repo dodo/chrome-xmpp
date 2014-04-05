@@ -9,22 +9,28 @@ var ChromeEventEmitter = require('domevents').EventEmitter;
 var Connection = require('../../lib/connection');
 var attachOptions = require('../client');
 
-var bgapp, bgappid, actions = {}, pool = {}, status = {};
+var bgapp, bgappid, actions = {}, pool = {}, status = {}, tabs = {}, plugins = {};
+var backend = new Connection({id:'extension'});
+
 chrome.browserAction.disable();
 chrome.management.getAll(function (apps) {
-    if(apps.some(function (app) {
-        if(app.type !== 'packaged_app') return;
-        if(app.name !== "XMPP") return;
+    apps.forEach(function (app) {
+        if(!/^XMPP/.test(app.name)) return;
+        if (app.id === chrome.runtime.id) return;
+        if(app.type !== 'packaged_app')
+            return createPlugin(app.id);
         bgappid = app.id;
-        return true;
-    })) {
+    });
+    if (bgappid) {
         chrome.management.launchApp(bgappid, function () {
             bgapp = new Connection();
             bgapp.id = null; // allow all ids
-            bgapp.on('error', console.error.bind(console));
+            bgapp.on('error', console.error.bind(console, '[bgapp error]'));
+            backend.pipe(chrome.runtime.connect(bgappid, {name:backend.id}));
             bgapp.listen(chrome.runtime.connect(bgappid, {name:bgappid}));
-            bgapp.on('status', function (id, state) {
-                status[id] = state;
+            bgapp.on('status', function (aid, state) {
+                status[aid] = state;
+                updateTab(aid, state);
             });
             bgapp.on('launch', function () {
                 var enabled = false;
@@ -59,6 +65,7 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
     new ChromeEventEmitter(port).setMode('ext').on('disconnect', function () {
         client.removeAllListeners();
         delete pool[client.id];
+        removeTab(client.aid);
     });
 });
 
@@ -119,24 +126,35 @@ Client.prototype.removeAllListeners = function removeAllListeners() {
     bgapp.removeListener('proxy', this._onproxy);
 };
 
-Client.prototype.allow = function allow(account) {
+Client.prototype.allow = function allow(accountid) {
     this.sendToTarget('allow', 'allowed');
-    this.attach(account);
+    this.attach(accountid);
 };
 
 Client.prototype.deny = function deny() {
     this.sendToTarget('error', 'access denied');
 };
 
-Client.prototype.attach = function attach(id) {
-    attachOptions(id, function (opts) {
-        this.id = opts.id;
-        this.send('attach', opts);
+Client.prototype.getAttachOptions = function attach(aid, done) {
+    attachOptions(aid, function (opts) {
+        removeTab(this.aid);
+        this.aid = opts.id;
+        tabs[this.aid] = {
+            id:this.source.sender.tab.id,
+            resource:opts.resource,
+            jid:opts.jid,
+        };
+        updateTab(this.aid, {connected:false});
+        if (done) done(opts);
     }.bind(this));
 };
 
+Client.prototype.attach = function (accountid) {
+    this.getAttachOptions(accountid, this.send.bind(this, 'attach'));
+}
+
 Client.prototype.detach = function detach() {
-    this.send('detach', {id:this.id});
+    this.send('detach', {id:this.aid});
 };
 
 Client.prototype.request_permission = function request_permission() {
@@ -146,5 +164,57 @@ Client.prototype.request_permission = function request_permission() {
     });
 };
 
+
+
+function createPlugin(appid) {
+    var plugin = new Connection({id:appid});
+    plugin.on('error', console.error.bind(console, '[plugin ' + appid + ' error]'));
+    plugin.bind(chrome.runtime.connect(appid, {name:appid}));
+    plugins[plugin.id] = plugin;
+    plugin.on('connect', function (aid) {
+        if (!aid) return;
+        Object.keys(pool).forEach(function (id) {
+            if (pool[id].aid == aid)
+                pool[id].getAttachOptions(aid, function (opts) {
+                    backend.send('connect', opts);
+                });
+        });
+    });
+    plugin.on('disconnect', function (aid) {
+        if (!aid) return;
+        backend.send('disconnect', {id:aid});
+    });
+}
+
+function updateTab(aid, status) {
+    if (!aid) return;
+    var tab = tabs[aid];
+    if (!tab) return;
+    Object.keys(plugins).forEach(function (id) {
+        plugins[id].send('status', {
+            connected:status.connected,
+            resource:tab.resource,
+            accountId:aid,
+            tabId:tab.id,
+            jid:tab.jid,
+            id:id,
+        });
+    });
+}
+
+function removeTab(aid) {
+    if (!aid) return;
+    var tab = tabs[aid];
+    if (!tab) return;
+    delete tabs[aid];
+    Object.keys(plugins).forEach(function (id) {
+        plugins[id].send('status', {
+            purge:true,
+            accountId:aid,
+            tabId:tab.id,
+            id:id,
+        });
+    });
+}
 
 
