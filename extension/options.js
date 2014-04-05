@@ -108,6 +108,12 @@ function createAccount(account, docElement) {
         updateStatus(doc, account, res);
     });
 
+    if (!docElement) {
+        var accounts = document.getElementById('accounts')
+        accounts.appendChild(doc);
+        doc = accounts.lastElementChild;
+    }
+    doc.setAttribute('id', account['id']);
     confirmProcess(doc, 'delete', function () {
         disableAll(doc, account);
         backport.off('update', onupdate);
@@ -116,13 +122,6 @@ function createAccount(account, docElement) {
             doc.remove();
         });
     });
-
-    if (!docElement) {
-        var accounts = document.getElementById('accounts')
-        accounts.appendChild(doc);
-        doc = accounts.lastElementChild;
-    }
-    doc.setAttribute('id', account['id']);
     return doc;
 
     function save(id, message) {
