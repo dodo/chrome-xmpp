@@ -143,7 +143,7 @@ Client.EVENTS = ['call','listen'];
 util.inherits(Client, Connection);
 function Client(port) {
     Connection.call(this, {
-        target:bgapp.source,
+        target:core.source,
         id:port.name,
     }).listen(port);
     this.onDisconnect('source', this.disconnect);
@@ -156,7 +156,7 @@ Client.prototype.setupListeners = function setupListeners() {
     this.on( 'remove permission', this.remove_permission.bind(this));
     this.on('disconnect', this.detach.bind(this));
     // proxy in both directions
-    bgapp.on('proxy', this._onproxy = this.sendToTarget.bind(this));
+    core.on('proxy', this._onproxy = this.sendToTarget.bind(this));
     Client.EVENTS.forEach(function (event) {
         this.on(event, this.send.bind(this, event));
     }.bind(this));
@@ -164,7 +164,7 @@ Client.prototype.setupListeners = function setupListeners() {
 
 Client.prototype.removeAllListeners = function removeAllListeners() {
     Connection.prototype.removeAllListeners.apply(this,[].slice.call(arguments));
-    bgapp.removeListener('proxy', this._onproxy);
+    core.removeListener('proxy', this._onproxy);
 };
 
 Client.prototype.disconnect = function disconnect() {
@@ -182,24 +182,21 @@ Client.prototype.allow = function allow(accountid) {
 
 Client.prototype.deny = function deny() {
     this.sendToTarget('error', 'access denied');
+    this.disconnect();
 };
 
-Client.prototype.getAttachOptions = function attach(aid, done) {
+Client.prototype.getAttachOptions = function (aid, done) {
     attachOptions(aid, function (opts) {
-        removeTab(this.aid);
         this.aid = opts.id;
-        tabs[this.aid] = {
-            id:this.source.sender.tab.id,
-            resource:opts.resource,
-            jid:opts.jid,
-        };
-        updateTab(this.aid, {connected:false});
         if (done) done(opts);
     }.bind(this));
 };
 
-Client.prototype.attach = function (accountid) {
-    this.getAttachOptions(accountid, this.send.bind(this, 'attach'));
+Client.prototype.attach = function attach(accountid) {
+    this.getAttachOptions(accountid, function (opts) {
+        createTab(opts, this.source.sender.tab.id);
+        this.send('attach', opts);
+    }.bind(this));
 }
 
 Client.prototype.detach = function detach() {
@@ -269,10 +266,10 @@ function createCore(appid, load) {
     var conn = new Connection();
     conn.appid = appid;
     conn.id = null; // allow all ids
-    conn.on('error', console.error.bind(console, '[core error]'));
-    backport.pipe(chrome.runtime.connect(appid, {name:backport.id}));
+    conn.on('error', console.error.bind(console, '[conn error]'));
     conn.listen(chrome.runtime.connect(appid, {name:appid}));
-    conn.on('status', function (aid, state) {
+    backport.bind(chrome.runtime.connect(appid, {name:backport.id}));
+    backport.on('status', function (aid, state) {
         status[aid] = state;
         updateTab(aid, state);
     });
@@ -289,7 +286,6 @@ function createCore(appid, load) {
             if (i--) setTimeout(toggle.bind(this, i), 80);
         }
     });
-    backport.onDisconnect('target');
     conn.onDisconnect('source', function () {
         chrome.browserAction.disable();
         load(undefined);
@@ -317,10 +313,11 @@ function createPlugin(appid) {
         .on('connect', function (aid) {
             if (!aid) return;
             Object.keys(pool).forEach(function (id) {
-                if (pool[id].aid == aid)
+                if (pool[id].aid == aid) {
                     pool[id].getAttachOptions(aid, function (opts) {
                         backport.send('connect', opts);
                     });
+                }
             });
         })
         .on('disconnect', function (aid) {
@@ -367,6 +364,15 @@ function updateBadge(tabid) {
         tabId:tabid,
         text: accountCount ? ""+accountCount : "",
     });
+}
+
+function createTab(opts, tabid) {
+    tabs[opts.id] = {
+        resource:opts.resource,
+        jid:opts.jid,
+        id:tabid,
+    };
+    updateTab(opts.id, {connected:false});
 }
 
 function updateTab(aid, status) {

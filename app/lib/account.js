@@ -11,6 +11,7 @@ function xep(name) {return XEP[name]}
 module.exports = Client;
 function Client(opts) {
     var that = this;
+    this.id = opts.id;
     this.stayAlive = opts.cfg.stayAlive;
     this.cids = {};
     this.connected = false;

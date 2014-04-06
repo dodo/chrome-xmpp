@@ -31,16 +31,20 @@ Client.prototype.setupListeners = function setupListeners() {
     var that = this;
     this.frontend.on('add', this.frontend.send.bind(this.frontend,'add'));
     this.frontend.on('update', this.frontend.send.bind(this.frontend,'update'));
-    this.frontend.on('connect', function (account) {
-        if (account && !that.accounts[account.id]) {
-            that.createAccount(account);
-        } else if (account) {
-            that.accounts[account.id].connect(account);
+    this.frontend.on('connect', function (opts) {
+        if (opts && !that.accounts[opts.id]) {
+            that.createAccount(opts);
+        } else if (opts) {
+            var account = that.accounts[opts.id];
+            if (account.connected)
+                account.update();
+            else
+                account.connect(opts);
         }
     });
-    this.frontend.on('disconnect', function (account) {
-        if (account && that.accounts[account.id])
-            that.deleteAccount(account);
+    this.frontend.on('disconnect', function (opts) {
+        if (opts && that.accounts[opts.id])
+            that.deleteAccount(opts);
     });
 };
 
@@ -110,9 +114,9 @@ Client.prototype.onDetach = function onDetach(account) {
 };
 
 Client.prototype.createAccount = function (opts) {
-    var account = new Account(opts)
+    var account = new Account(opts);
     this.accounts[opts.id] = account;
-    account.update = updateStatus.bind(this, account, opts.id);
+    account.update = updateStatus.bind(this, account);
     account.fd
         .on('offline', account.update)
         .on('online',  account.update);
@@ -124,8 +128,8 @@ Client.prototype.deleteAccount = function (account) {
     delete this.accounts[account.id];
 };
 
-function updateStatus(account, id) {
-    this.send('frontend', 'status', id, {connected:account.connected});
+function updateStatus(account) {
+    this.send('frontend', 'status', account.id, {connected:account.connected});
 }
 
 function jsonify(arg) {
