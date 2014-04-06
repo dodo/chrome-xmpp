@@ -30,15 +30,6 @@ process.nextTick(function () {
 
 new ChromeEventEmitter(chrome.app.runtime).setMode('ext')
 .on('launched', function (ev) {
-
-//     chrome.notifications.create("onLaunched", {
-//         title: "XMPP Background Gears",
-//         message: "Launched! " + chrome.runtime.id,
-//         type: "basic",
-//         iconUrl: "icon.png",
-//     }, function (id) {
-//         console.log(id, "created");
-//     });
     setTimeout(function () {
         Object.keys(pool).forEach(function (id) {
             pool[id].send('frontend', 'launch');

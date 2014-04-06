@@ -4,49 +4,69 @@
  * handles account configs,
  * …
  */
+var __slice = Array.prototype.slice;
 var util = require('util');
 var ChromeEventEmitter = require('domevents').EventEmitter;
 var Connection = require('../../lib/connection');
 var attachOptions = require('../client');
+function noop() {};
 
-var bgapp, bgappid, actions = {}, pool = {}, status = {}, tabs = {}, plugins = {};
-var backend = new Connection({id:'extension'});
+var core, actions = {}, pool = {}, status = {}, tabs = {}, plugins = {}, notifications = {};
+var arguments_cache = { notifications:{} };
+var backport = new Connection({id:'extension'});
 
 chrome.browserAction.disable();
-chrome.management.getAll(function (apps) {
-    apps.forEach(function (app) {
-        if(!/^XMPP/.test(app.name)) return;
-        if (app.id === chrome.runtime.id) return;
-        if(app.type !== 'packaged_app')
-            return createPlugin(app.id);
-        bgappid = app.id;
-    });
-    if (bgappid) {
-        chrome.management.launchApp(bgappid, function () {
-            bgapp = new Connection();
-            bgapp.id = null; // allow all ids
-            bgapp.on('error', console.error.bind(console, '[bgapp error]'));
-            backend.pipe(chrome.runtime.connect(bgappid, {name:backend.id}));
-            bgapp.listen(chrome.runtime.connect(bgappid, {name:bgappid}));
-            bgapp.on('status', function (aid, state) {
-                status[aid] = state;
-                updateTab(aid, state);
-            });
-            bgapp.on('launch', function () {
-                var enabled = false;
-                return toggle(16);
+loadCore(function reload(new_core) {
+    core = new_core;
+});
+self.getAppID = function getAppID() {
+    return core && core.appid;
+};
+loadPlugins();
 
-                function toggle(i) {
-                    if (enabled)
-                        chrome.browserAction.disable();
-                    else
-                        chrome.browserAction.enable();
-                    enabled = !enabled;
-                    if (i--) setTimeout(toggle.bind(this, i), 80);
-                }
+// for core and plugins
+new ChromeEventEmitter(chrome.management).setMode('ext')
+.on('enabled', function (app) {
+    if(!/^XMPP/.test(app.name)) return;
+    if (app.id === chrome.runtime.id) return;
+
+    if (app.type === 'packaged_app') {
+        if (!core) {
+            launchCore(app.id, function reload(new_core) {
+                core = new_core;
             });
+        }
+    } else createPlugin(app.id);
+})
+.on('disabled', function (app) {
+    if(!/^XMPP/.test(app.name)) return;
+    if (app.id === chrome.runtime.id) return;
+
+    if (core && app.id === core.appid) {
+        createNotification('core disabled', function () {
+            core = new_core;
+        }, appid);
+    }
+})
+.on('installed', function (app) {
+    if(!/^XMPP/.test(app.name)) return;
+    if (app.id === chrome.runtime.id) return;
+
+    if (!core) {
+        chrome.notifications.clear('no core', noop);
+        launchCore(app.id, function reload(new_core) {
+            core = new_core;
         });
-    };
+    }
+});
+
+new ChromeEventEmitter(chrome.notifications).setMode('ext')
+.on('clicked', function (id) {
+    var notification = notifications[id];
+    if (notification && notification.callback) {
+        var args = arguments_cache.notifications[id] || [];
+        notification.callback.apply(this, args);
+    }
 });
 
 // for infobar
@@ -60,14 +80,36 @@ new ChromeEventEmitter(chrome.extension).setMode('ext')
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connect', function (port) {
-    var client = new Client(port);
-    pool[client.id] = client;
-    new ChromeEventEmitter(port).setMode('ext')
-        .on('disconnect', client.disconnect.bind(client));
+    pool[port.name] = new Client(port);
 });
 
-self.getAppID = function getAppID() {
-    return bgappid;
+
+/*------------------------------------------------------------------------------
+ * notification button callbacks
+ */
+
+notifications['no core'] = {
+    title: "XMPP - no core!",
+    message: [
+        '"XMPP - core"'+"app not found!",
+        "This is needed to connect to the outer world!",
+        "→ Please install app."
+    ].join("\n\n"),
+};
+
+notifications['core disabled'] = {
+    title: "XMPP - core disabled!",
+    message: [
+        '"XMPP - core"'+" app seems to be disabled.",
+        "This is needed to connect to the outer world!",
+        "→ Click notification to enable app."
+    ].join("\n\n"),
+    callback: function (reload, appid) {
+        chrome.management.setEnabled(appid, !!'enabled', function () {
+            chrome.notifications.clear('core disabled', noop);
+            launchCore(appid, reload);
+        });
+    },
 };
 
 /*------------------------------------------------------------------------------
@@ -104,6 +146,7 @@ function Client(port) {
         target:bgapp.source,
         id:port.name,
     }).listen(port);
+    this.onDisconnect('source', this.disconnect);
     port.name = this.id;
     this.setupListeners();
 }
@@ -175,7 +218,98 @@ Client.prototype.remove_permission = function remove_permission() {
     this.deny();
 };
 
+function loadCore(reload, retry) {
+    if (core) return;
+    if (typeof retry !== 'number') retry = 100; // 30s
+    else if (retry < 0) retry = 0;
+    chrome.notifications.clear('core disabled', noop);
+    chrome.management.getAll(function (apps) {
+        var appid, foundIt = false;
+        apps.forEach(function (app) {
+            if(!/^XMPP/.test(app.name)) return;
+            if(app.type !== 'packaged_app') return;
+            appid = app.id;
+            if (app.enabled)
+                foundIt = true;
+            else
+                retry = 0;
+        });
+        if (foundIt) {
+            launchCore(appid, reload);
+        } else if (retry) {
+            setTimeout(loadCore.bind(this, reload, --retry), 300);
+        } else {
+            reload(undefined);
+            createNotification(appid ? 'core disabled' : 'no core', reload, appid);
+        }
+    });
+}
 
+var launched = {};
+function launchCore(appid, load) {
+    if (core) return;
+    if (launched[appid]) {
+        launched[appid].push(load);
+        return;
+    }
+    launched[appid] = [load];
+    chrome.management.launchApp(appid, function () {
+        var loads = launched[appid];
+        delete launched[appid];
+        createCore(appid, function (new_core) {
+            loads.forEach(function (load) {
+                load(new_core);
+            });
+        });
+    });
+}
+
+function createCore(appid, load) {
+    if (core) return;
+    var conn = new Connection();
+    conn.appid = appid;
+    conn.id = null; // allow all ids
+    conn.on('error', console.error.bind(console, '[core error]'));
+    backport.pipe(chrome.runtime.connect(appid, {name:backport.id}));
+    conn.listen(chrome.runtime.connect(appid, {name:appid}));
+    conn.on('status', function (aid, state) {
+        status[aid] = state;
+        updateTab(aid, state);
+    });
+    conn.on('launch', function () {
+        var enabled = false;
+        return toggle(16);
+
+        function toggle(i) {
+            if (enabled)
+                chrome.browserAction.disable();
+            else
+                chrome.browserAction.enable();
+            enabled = !enabled;
+            if (i--) setTimeout(toggle.bind(this, i), 80);
+        }
+    });
+    backport.onDisconnect('target');
+    conn.onDisconnect('source', function () {
+        chrome.browserAction.disable();
+        load(undefined);
+        // TODO FIXME hopefully we dont get any events until core is loaded again
+        setTimeout(loadCore.bind(this, load), 300);
+    });
+    load(conn);
+}
+
+function loadPlugins() {
+    chrome.management.getAll(function (apps) {
+        apps.filter(function (app) {
+            return /^XMPP/.test(app.name)
+                && app.id !== chrome.runtime.id
+                && app.type === 'extension';
+        }).map(function (app) {
+            return app.id;
+        }).forEach(createPlugin);
+    });
+}
 
 function createPlugin(appid) {
     plugins[appid] = new Connection({id:appid})
@@ -185,13 +319,13 @@ function createPlugin(appid) {
             Object.keys(pool).forEach(function (id) {
                 if (pool[id].aid == aid)
                     pool[id].getAttachOptions(aid, function (opts) {
-                        backend.send('connect', opts);
+                        backport.send('connect', opts);
                     });
             });
         })
         .on('disconnect', function (aid) {
             if (!aid) return;
-            backend.send('disconnect', {id:aid});
+            backport.send('disconnect', {id:aid});
         })
         .on('request permission', function (aid) {
             if (!aid) return;
@@ -207,8 +341,23 @@ function createPlugin(appid) {
                     pool[id].remove_permission();
             });
         })
-        .bind(chrome.runtime.connect(appid, {name:appid}));
+        .bind(chrome.runtime.connect(appid, {name:appid}), function () {
+            this.removeAllListeners();
+            delete plugins[this.id];
+        });
 }
+
+function createNotification(id /*, [args,…]*/) {
+    var n = notifications[id];
+    arguments_cache.notifications[id] = __slice.call(arguments, 1);
+    chrome.notifications.create(id, {
+        title: n.title,
+        message: n.message,
+        type: n.type || "basic",
+        iconUrl: n.icon || "icon.png",
+        isClickable: !!n.callback,
+    }, noop);
+};
 
 function updateBadge(tabid) {
     var accountCount = Object.keys(tabs).filter(function (id) {
