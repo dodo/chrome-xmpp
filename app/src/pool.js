@@ -111,7 +111,6 @@ Client.prototype.emit = function emit(event/*, [args,…]*/) {
 Client.prototype.proxy = function proxy(opts /*, [args…]*/) {
     var args = __slice.call(arguments, 1); // dont send options
     var data = args.map(jsonify);
-    data.unshift('proxy'); // add event name
     debug('proxy', "»", this.id, data, this.target)
     if (this.target) {
         this.target.postMessage({
