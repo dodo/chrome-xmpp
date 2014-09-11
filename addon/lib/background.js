@@ -54,11 +54,9 @@ new ChromeEventEmitter(chrome.extension).setMode('ext')
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connect', function (port) {
-    var client = new Connection({id:port.name}).bind(port);
-    pool[client.id] = client;
-    new ChromeEventEmitter(port).setMode('ext').on('disconnect', function () {
-        client.removeAllListeners();
-        delete pool[client.id];
+    pool[port.name] = new Connection({id:port.name}).bind(port, function () {
+        this.removeAllListeners();
+        delete pool[this.id];
     });
 });
 
