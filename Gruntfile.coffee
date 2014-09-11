@@ -10,9 +10,9 @@ module.exports = (grunt) ->
                     alias:( "#{src}:#{tgt}" for tgt, src of require('sawrocket-xmpp/package').browser)
             extension:
                 files:
-                    'extension/background.js': ['extension/lib/background.js']
-                    'extension/injectxmpp.js': ['extension/lib/injectxmpp.js']
-                    'extension/db.js': ['extension/lib/db.js']
+                    'extension/background.js': ['extension/src/background.js']
+                    'extension/injectxmpp.js': ['extension/src/injectxmpp.js']
+                    'extension/db.js': ['extension/src/db.js']
             addon:
                 files:
                     'addon/background.js': ['addon/lib/background.js']
