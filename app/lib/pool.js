@@ -65,6 +65,22 @@ Client.prototype.emit = function emit(event/*, [args,…]*/) {
     Connection.prototype.emit.apply(this, args);
 };
 
+Client.prototype.proxy = function proxy(opts, /*, [args…]*/) {
+    var args = __slice.call(arguments, 1); // dont send options
+    var data = args.map(jsonify);
+    data.unshift('proxy'); // add event name
+    if (this.target) {
+        this.target.postMessage({
+            event:'proxy',
+            args:data,
+            id:this.id,
+            ns:Connection.NS,
+            resource: opts.resource,
+            jid: opts.jid,
+        });
+    }
+};
+
 Client.prototype.send = function send(id, event /*, [args…]*/) {
     var args = __slice.call(arguments, 1); // dont send id
     var data = args.map(jsonify);
@@ -74,10 +90,10 @@ Client.prototype.send = function send(id, event /*, [args…]*/) {
     }
     if (this.target) {
         this.target.postMessage({
-           event:event,
-           args:data,
-           ns:Connection.NS,
-           id:id,
+            event:event,
+            args:data,
+            ns:Connection.NS,
+            id:id,
         });
     }
 };
@@ -88,7 +104,10 @@ Client.prototype.onAttach = function onAttach(account) {
     account.cid = this.id;
     var queue = this.connections[this.id] && this.connections[this.id].queue || [];
     // pipe events send from account to connection and back
-    conn.send = this.send.bind(this, this.id, 'proxy');
+    conn.send = this.proxy.bind(this, {
+        resource:account.resource,
+        jid:account.jid,
+    });
     this.connections[this.id] = conn;
     // hook to an account
     if (!this.accounts[account.id])
