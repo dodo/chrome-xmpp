@@ -8,6 +8,7 @@ var __slice = Array.prototype.slice;
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var xmpp = new (require('lightstream/backend/node-xmpp'));
+var JID = xmpp.JID;
 var Element = xmpp.Element;
 var Connection = require('../../lib/connection');
 var Account = require('./account');
@@ -144,6 +145,8 @@ function jsonify(arg) {
         children:__slice.call(arg.children || []).map(jsonify),
     } : (arg instanceof Error) ? (
         arg.stack || arg.message
+    ) : (arg instanceof JID) ? (
+        arg.toString()
     ) : isArray(arg) ? (
         arg.map(jsonify)
     ) : (arg && typeof arg === 'object') ? (
