@@ -15,6 +15,7 @@ var core, actions = {}, pool = {}, status = {}, tabs = {}, plugins = {}, notific
 var arguments_cache = { notifications:{} };
 var backport = new Connection({id:'extension'});
 
+console.log("extension")
 chrome.browserAction.disable();
 loadCore(function reload(new_core) {
     core = new_core;
@@ -55,6 +56,7 @@ new ChromeEventEmitter(chrome.management).setMode('ext')
 
     if (!core) {
         chrome.notifications.clear('no core', noop);
+        console.log("plugin installed", app.id)
         launchCore(app.id, function reload(new_core) {
             core = new_core;
         });
@@ -82,6 +84,7 @@ new ChromeEventEmitter(chrome.extension).setMode('ext')
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connect', function (port) {
+    console.log("connect", port)
     pool[port.name] = new Client(port);
 });
 
@@ -185,11 +188,13 @@ Client.prototype.connect = function connect() {
 };
 
 Client.prototype.disconnect = function disconnect() {
+    console.log('disconnect bg client', this.id, this.aid, this.allowed)
     if (this.allowed) this.send('disconnect', {id:this.aid});
     else this.sendToTarget('error', 'access denied');
 };
 
 Client.prototype.close = function close() {
+    console.log("close bg client", this.id, !!this.source, this)
     if (this.source)
         this.source.disconnect();
     this.detach();
@@ -207,6 +212,7 @@ Client.prototype.allow = function allow(accountid) {
 Client.prototype.deny = function deny() {
     this.allowed = false;
     this.sendToTarget('error', 'access denied');
+    console.warn('deny', !!this.source)
     this.close();
 };
 
@@ -260,6 +266,7 @@ function Core(appid) {
 }
 
 Core.prototype.onMessage = function (ev) {
+console.log("core message", ev)
     if (this.validate(ev)) {
         if (ev.event === 'proxy') {
             this.emit('proxy', ev);
@@ -319,7 +326,9 @@ function launchCore(appid, load) {
 function createCore(appid, load) {
     if (core) return;
     var conn = new Core(appid);
+    console.log("listen app launch")
     conn.on('launch', function () {
+        console.error("app launched!")
         var enabled = false;
         return toggle(16);
 
@@ -354,9 +363,11 @@ function loadPlugins() {
 }
 
 function createPlugin(appid) {
+    console.log("create plugin for", appid, plugins[appid])
     plugins[appid] = new Connection({id:appid})
         .on('error', console.error.bind(console, '[plugin ' + appid + ' error]'))
         .on('connect', function (aid) {
+            console.log("plugin connect", aid)
             if (!aid) return;
             Object.keys(pool).forEach(function (id) {
                 if (pool[id].aid == aid) {
@@ -367,14 +378,17 @@ function createPlugin(appid) {
             });
         })
         .on('disconnect', function (aid) {
+            console.log("plugin disconnect", aid)
             if (!aid) return;
             backport.send('disconnect', {id:aid});
         })
         .on('detach', function (aid) {
+            console.log("plugin detach", aid)
             if (!aid) return;
             backport.send('detach', {id:aid});
         })
         .on('request permission', function (aid) {
+            console.log("plugin request permission", aid)
             if (!aid) return;
             Object.keys(pool).forEach(function (id) {
                 if (pool[id].aid == aid)
@@ -382,6 +396,7 @@ function createPlugin(appid) {
             });
         })
         .on('remove permission', function (aid) {
+            console.log("plugin remove permission", aid)
             if (!aid) return;
             Object.keys(pool).forEach(function (id) {
                 if (pool[id].aid == aid)
@@ -397,6 +412,13 @@ function createPlugin(appid) {
 function createNotification(id /*, [args,…]*/) {
     var n = notifications[id];
     arguments_cache.notifications[id] = __slice.call(arguments, 1);
+    console.log("new notification", id, {
+        title: n.title,
+        message: n.message,
+        type: n.type || "basic",
+        iconUrl: n.icon || "icon.png",
+        isClickable: !!n.callback,
+    })
     chrome.notifications.create(id, {
         title: n.title,
         message: n.message,
@@ -417,6 +439,7 @@ function updateBadge(tabid) {
 }
 
 function createTab(opts, tabid) {
+    console.log("new tab", tabid, opts.id)
     tabs[opts.id] = {
         resource:opts.resource,
         jid:opts.jid,
@@ -427,10 +450,12 @@ function createTab(opts, tabid) {
 }
 
 function updateTab(aid, status) {
+    console.log("update tab", aid)
     if (!aid) return;
     var tab = tabs[aid];
     if (!tab) return;
     updateBadge(tab.id);
+    console.log('notify plugins', Object.keys(plugins), tab.id, status)
     Object.keys(plugins).forEach(function (id) {
         plugins[id].send('status', {
             connected:status.connected,
@@ -444,6 +469,7 @@ function updateTab(aid, status) {
 }
 
 function removeTab(aid) {
+    console.log("remove tab", aid)
     if (!aid) return;
     var tab = tabs[aid];
     if (!tab) return;

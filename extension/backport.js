@@ -35,6 +35,7 @@ proto.emit = function (event/*, [args, …]*/) {
 };
 
 proto.send = function (event/*, [args, …]*/) {
+    console.log('send', arguments, !!this.port, this)
     if (this.port) {
         var args = __slice.call(arguments);
         this.port.postMessage({
@@ -52,9 +53,10 @@ proto.connect = function () {
     chrome.runtime.getBackgroundPage(function (bg) {
         var appid = bg && bg.getAppID();
         if (appid) {
-            console.log("connect to background …");
+            console.log("connect to background …", bg);
             that.port = chrome.runtime.connect(appid, {name:that.id});
             that.port.onMessage.addListener(function (msg) {
+                console.log('msg', msg)
                 if (msg && msg.event && msg.args)
                     that.emit.apply(that, msg.args);
             });
@@ -66,6 +68,7 @@ proto.connect = function () {
 };
 
 proto.dispatch = function (el) {
+    console.log('dispatch')
     el.dispatchEvent(new CustomEvent('BackPortLoaded', {
         cancelable: true,
         bubbles: true,

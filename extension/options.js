@@ -270,6 +270,7 @@ function updateStatus(doc, account, res) {
     }
     status.classList.remove(res.connected ? "offline" : "online");
     status.classList.add(res.connected ? "online" : "offline");
+    console.log(allAccountsOffline(), accountsCounter)
     if (allAccountsOffline())
         enableElements( document.querySelector('.main.config'));
     else
