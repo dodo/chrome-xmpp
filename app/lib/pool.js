@@ -128,6 +128,14 @@ function updateStatus(account, id) {
     this.send('frontend', 'status', id, {connected:account.connected});
 }
 
+function mapObject(obj, fun) {
+    var res = {};
+    Object.keys(obj).forEach(function (key) {
+        res[key] = fun(obj[key], key);
+    });
+    return res;
+}
+
 function jsonify(arg) {
     return (arg instanceof Element) ? {
         name:arg.name,
@@ -137,6 +145,8 @@ function jsonify(arg) {
         arg.stack || arg.message
     ) : isArray(arg) ? (
         arg.map(jsonify)
+    ) : (arg && typeof arg === 'object') ? (
+        mapObject(arg, jsonify)
     ) : arg;
 }
 
