@@ -35,6 +35,7 @@ proto.emit = function (event/*, [args, …]*/) {
 };
 
 proto.send = function (event/*, [args, …]*/) {
+    console.log('send', arguments, !!this.port, this)
     if (this.port) {
         var args = __slice.call(arguments);
         this.port.postMessage({
@@ -48,8 +49,10 @@ proto.send = function (event/*, [args, …]*/) {
 };
 
 proto.connect = function () {
+    console.log("connect to background …");
     this.port = chrome.runtime.connect({name:this.id});
     this.port.onMessage.addListener(function (msg) {
+        console.log('msg', msg)
         if (msg && msg.event && msg.args)
             this.emit.apply(this, msg.args);
     }.bind(this));
@@ -57,6 +60,7 @@ proto.connect = function () {
 };
 
 proto.dispatch = function (el) {
+    console.log('dispatch')
     el.dispatchEvent(new CustomEvent('BackPortLoaded', {
         cancelable: true,
         bubbles: true,

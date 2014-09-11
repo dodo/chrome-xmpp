@@ -43,6 +43,7 @@ function updateAccounts(res) {
 
         });
     } else {
+        console.log("update status", res)
         updateStatus(doc, res);
     }
 }

@@ -10,10 +10,13 @@ var gears = new Connection({id:'pageaction'});
 gears.id = chrome.runtime.id;
 var status = {}, actions = {}, pool = {};
 
+console.log("addon")
+
 gears.on('status', function (state) {
     var accounts = Object.keys(status).filter(function (id) {
         return status[id].tabId == state.tabId;
     });
+    console.log('status', state, accounts, pool[state.tabId])
     if (pool[state.tabId])
         pool[state.tabId].send('status', state);
     if (state.purge) {
@@ -39,6 +42,7 @@ gears.on('status', function (state) {
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connectExternal', function (port) {
+    console.log('connection from external', port)
     if (port.name !== gears.id) return;
     gears.bind(port);
 });
@@ -46,6 +50,7 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
 // for pageaction
 new ChromeEventEmitter(chrome.extension).setMode('ext')
 .on('request', function (request, sender, sendResponse) {
+    console.log('request', request)
     var action = function () {return {error:request.type + " not an action"}};
     if (actions[request.type])
         action = actions[request.type];
@@ -54,6 +59,7 @@ new ChromeEventEmitter(chrome.extension).setMode('ext')
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connect', function (port) {
+    console.log("connect", port)
     pool[port.name] = new Connection({id:port.name}).bind(port, function () {
         this.removeAllListeners();
         delete pool[this.id];
@@ -66,6 +72,7 @@ new ChromeEventEmitter(chrome.runtime).setMode('ext')
 
 ['connect', 'disconnect', 'remove permission'].forEach(function (action) {
     actions[action] = function (request, sender) {
+        console.log("action!", action, request)
         if (!request.id) return;
         if (!status[request.id]) return;
 
