@@ -1,5 +1,5 @@
 if (typeof(require) !== 'undefined') {
-    Database = require('./lib/db');
+    Database = require('./src/db');
 }
 
 var db = new Database('accounts', localStorage['accounts-version']);
