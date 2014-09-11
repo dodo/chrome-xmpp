@@ -172,6 +172,11 @@ Client.prototype.removeAllListeners = function removeAllListeners() {
     core.removeListener('proxy', this._onproxy);
 };
 
+Client.prototype.onProxy = function onProxy(ev) {
+    if (this.tab && ev.jid === this.tab.jid && ev.resource === this.tab.resource)
+        this.sendToTarget.apply(this, ev.args);
+};
+
 Client.prototype.connect = function connect() {
     if (this.allowed) this.getAttachOptions(this.aid, function (opts) {
         this.send('connect', opts);
@@ -215,6 +220,7 @@ Client.prototype.getAttachOptions = function (aid, done) {
 Client.prototype.attach = function attach(accountid) {
     this.getAttachOptions(accountid, function (opts) {
         this.tab = createTab(opts, this.source.sender.tab.id);
+        this.tab.client = this;
         this.send('attach', opts);
     }.bind(this));
 }
@@ -441,6 +447,10 @@ function removeTab(aid) {
     if (!aid) return;
     var tab = tabs[aid];
     if (!tab) return;
+    if (tab.client) {
+        delete tab.client.tab;
+        delete tab.client;
+    }
     delete tabs[aid];
     updateBadge(tab.id);
     Object.keys(plugins).forEach(function (id) {

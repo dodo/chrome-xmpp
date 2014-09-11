@@ -24,7 +24,7 @@ var proto = XMPP.prototype;
 
 proto.on = function (event, listener) {
     // TODO FIXME allow sending events 'ping.pong', 'presence.stanza', 'presence.send'
-    if (['allow'].indexOf(event) === -1 && this.listeners(event).length === 0)
+    if (['allow'].indexOf(event) === -1)
         this.send('listen', event);
     return Connection.prototype.on.call(this, event, listener);
 };
