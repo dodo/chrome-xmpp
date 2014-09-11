@@ -7,7 +7,7 @@ Add XMPP as Feature to your Browser.
 
 #### how should this work?
 
-* install app + extension
+* install app + extension + addon
 * go to the options page and enter your jid + credentials
 * be happy to find window.XMPP on every website
 * write website that uses this feature
@@ -16,7 +16,7 @@ Add XMPP as Feature to your Browser.
 
 * website use window.XMPP to ask for a new connection (or access to a running connection)
 * user gets asked by infobar if he/she would allow access to the xmpp connection
-* user can grant different access levels to each website
+* user can grant different access levels to each website (TODO)
 
 #### when is this ready?
 
@@ -31,13 +31,11 @@ Make sure you have [grunt](https://gruntjs.com/) installed.
 ```bash
 git clone git://github.com/dodo/chrome-xmpp.git
 cd chrome-xmpp/
-npm install .
-grunt
+grunt install
 ```
 
 - Goto `Chrome/chromium menu` > `Settings` > `Extensions`.
 - Check `Developer mode` on.
 - Click `Load unpacked extension…`
-- Select `chrome-xmpp/app` and `chrome-xmpp/extension` folder.
+- Select `chrome-xmpp/app`, `chrome-xmpp/extension` and `chrome-xmpp/addon` folder.
 - Be Happy :)
-

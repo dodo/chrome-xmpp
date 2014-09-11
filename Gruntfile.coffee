@@ -2,6 +2,9 @@ module.exports = (grunt) ->
 
     grunt.initConfig
         pkg: grunt.file.readJSON('package.json')
+        exec:
+            install:
+                command: 'npm install .'
         browserify:
             app:
                 files:
@@ -18,12 +21,8 @@ module.exports = (grunt) ->
                     'addon/background.js': ['addon/src/background.js']
 
     grunt.loadNpmTasks 'grunt-browserify'
+    grunt.loadNpmTasks 'grunt-exec'
 
-    grunt.registerTask 'default', [
-        'browserify:app'
-        'browserify:extension'
-        'browserify:addon'
-    ]
     grunt.registerTask 'app', [
         'browserify:app'
     ]
@@ -32,4 +31,16 @@ module.exports = (grunt) ->
     ]
     grunt.registerTask 'addon', [
         'browserify:addon'
+    ]
+    grunt.registerTask 'backend', [
+        'app'
+        'extension'
+        'addon'
+    ]
+    grunt.registerTask 'default', [
+        'backend'
+    ]
+    grunt.registerTask 'install', [
+        'exec:install'
+        'default'
     ]
