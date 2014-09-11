@@ -1,6 +1,7 @@
 /*
  * This script starts a pool client for each extension connection.
  */
+require('sawrocket-xmpp/initrd'); // let browserify find all stuff needed to get node-xmpp running
 var isArray = Array.isArray;
 var __slice = Array.prototype.slice;
 var util = require('util');
