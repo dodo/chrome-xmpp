@@ -12,11 +12,13 @@ var JID = xmpp.JID;
 var Element = xmpp.Element;
 var Connection = require('../../lib/connection');
 var Account = require('./account');
+var debug = util.debuglog('app:pool:client');
 
 
 module.exports = Client;
 util.inherits(Client, Connection);
 function Client(port, accounts, frontend) {
+    debug('new client');
     Connection.call(this).bind(port, function () {
         this.emit('unbind');
         this.removeAllListeners();
@@ -34,6 +36,7 @@ Client.prototype.setupListeners = function setupListeners() {
     this.frontend.on('add', this.frontend.send.bind(this.frontend,'add'));
     this.frontend.on('update', this.frontend.send.bind(this.frontend,'update'));
     this.frontend.on('connect', function (opts) {
+        debug("frontend connect", opts, opts && that.accounts[opts.id])
         if (opts && !that.accounts[opts.id]) {
             that.createAccount(opts);
         } else if (opts) {
@@ -45,6 +48,7 @@ Client.prototype.setupListeners = function setupListeners() {
         }
     });
     this.on('connect', function (opts) {
+        debug("connect", opts, opts && that.accounts[opts.id])
         if (opts && that.accounts[opts.id]) {
             var account = that.accounts[opts.id];
             if (account.connected)
@@ -54,6 +58,7 @@ Client.prototype.setupListeners = function setupListeners() {
         }
     });
     this.on('disconnect', function (opts) {
+        debug("disconnect", opts, opts && that.accounts[opts.id])
         if (opts && that.accounts[opts.id]) {
             var account = that.accounts[opts.id];
             if (account.connected)
@@ -63,6 +68,7 @@ Client.prototype.setupListeners = function setupListeners() {
         }
     })
     this.frontend.on('disconnect', function (opts) {
+        debug("frontend disconnect", opts, opts && that.accounts[opts.id])
         if (opts && that.accounts[opts.id]) {
             var account = that.accounts[opts.id];
             if (account.connected)
@@ -72,10 +78,12 @@ Client.prototype.setupListeners = function setupListeners() {
         }
     });
     this.frontend.on('detach', function (opts) {
+        debug("frontend detach", opts, opts && that.accounts[opts.id])
         if (opts && that.accounts[opts.id])
             that.deleteAccount(opts);
     });
     this.on('detach', function (opts) {
+        debug("detach", opts, opts && that.accounts[opts.id])
         if (opts && that.accounts[opts.id])
             that.deleteAccount(opts);
     });
@@ -104,6 +112,7 @@ Client.prototype.proxy = function proxy(opts, /*, [args…]*/) {
     var args = __slice.call(arguments, 1); // dont send options
     var data = args.map(jsonify);
     data.unshift('proxy'); // add event name
+    debug('proxy', "»", this.id, data, this.target)
     if (this.target) {
         this.target.postMessage({
             event:'proxy',
@@ -119,6 +128,7 @@ Client.prototype.proxy = function proxy(opts, /*, [args…]*/) {
 Client.prototype.send = function send(id, event /*, [args…]*/) {
     var args = __slice.call(arguments, 1); // dont send id
     var data = args.map(jsonify);
+    debug('postmessage', event, "»", id, data, this.target)
     if (event === 'status' || id === 'frontend') {
         // multiplex over to the frontend pages
         this.frontend.send.apply(this.frontend, args);
@@ -134,6 +144,7 @@ Client.prototype.send = function send(id, event /*, [args…]*/) {
 };
 
 Client.prototype.onAttach = function onAttach(account) {
+    debug('attach ' + this.id);
     var conn = new EventEmitter();
     account.connection = conn;
     account.cid = this.id;
@@ -154,6 +165,7 @@ Client.prototype.onAttach = function onAttach(account) {
 };
 
 Client.prototype.onDetach = function onDetach(account) {
+    debug('detach ' + this.id);
     account.cid = this.id;
     account.connection = this.connections[this.id];
     if (this.accounts[account.id]) {
@@ -166,6 +178,7 @@ Client.prototype.onDetach = function onDetach(account) {
 };
 
 Client.prototype.createAccount = function (opts) {
+    debug('create account ' + opts.id + ' on ' + this.id);
     var account = new Account(opts);
     this.accounts[opts.id] = account;
     account.update = updateStatus.bind(this, account);

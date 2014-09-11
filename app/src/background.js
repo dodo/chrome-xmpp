@@ -9,6 +9,7 @@ var EventEmitter = require('events').EventEmitter;
 var ChromeEventEmitter = require('domevents').EventEmitter;
 var Connection = require('../../lib/connection');
 var Client = require('./pool');
+var debug = util.debuglog('app:background');
 var accounts = {};
 var pool = {}; // of each extension connection
 var action = {
@@ -31,15 +32,7 @@ process.nextTick(function () {
 
 new ChromeEventEmitter(chrome.app.runtime).setMode('ext')
 .on('launched', function (ev) {
-
-//     chrome.notifications.create("onLaunched", {
-//         title: "XMPP Background Gears",
-//         message: "Launched! " + chrome.runtime.id,
-//         type: "basic",
-//         iconUrl: "icon.png",
-//     }, function (id) {
-//         console.log(id, "created");
-//     });
+    debug("Launched", ev);
     setTimeout(function () {
         Object.keys(pool).forEach(function (id) {
             pool[id].send('frontend', 'launch');
@@ -48,12 +41,13 @@ new ChromeEventEmitter(chrome.app.runtime).setMode('ext')
 })
 .on('restarted', function (ev) {
     // FIXME TODO reconnect all clients and ports
-    console.warn("Restarted", ev)
+    debug("Restarted", ev)
 });
 
 
 new ChromeEventEmitter(chrome.runtime).setMode('ext')
 .on('connectExternal', function (port) {
+    debug('connection from external', port)
     if (port.name === 'tab-options') {
         options.tab.bind(port);
     } else if (port.name === 'browseraction-options') {
@@ -91,6 +85,7 @@ function Repeater() {
 }
 
 Repeater.prototype.proxy = function (event, listener, target) {
+    debug('proxy', this, event, listener, target)
     var emit = this.emit.bind(this, event);
     emit.listener = listener
                  || (this._events[event] && this._events[event][0])
@@ -102,6 +97,7 @@ Repeater.prototype.proxy = function (event, listener, target) {
 Repeater.prototype.pipe = function (target) {
     if (!target) return this;
     this.targets.push(target);
+    debug("pipe", Object.keys(this._events),this)
     Object.keys(this._events).forEach(function (event) {
         if (event !== 'newListener' && event !== 'removeListener')
             this.proxy(event, null, target);
@@ -111,6 +107,7 @@ Repeater.prototype.pipe = function (target) {
 
 Repeater.prototype.send = function (/*[args,…]*/) {
     var args = __slice.call(arguments);
+    debug("repeat", args)
     this.targets.forEach(function (target) {
         target.send.apply(target, args);
     });

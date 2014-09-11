@@ -6,10 +6,12 @@ var util = require('util');
 var Lightstream = require('lightstream');
 var XEP = require('lightstream/xep');
 function xep(name) {return XEP[name]}
+var debug = util.debuglog('app:account:client');
 
 
 module.exports = Client;
 function Client(opts) {
+    debug("new client");
     var that = this;
     this.id = opts.id;
     this.stayAlive = opts.cfg.stayAlive;
@@ -31,16 +33,19 @@ Client.prototype.connect = function connect(opts) {
     this.resource = opts.resource;
     if (this.resource)
         this.fulljid += "/" + this.resource;
+    debug("connect", this.fulljid, opts)
     this.fd.connect(this.fulljid, opts.password, opts.params);
     return this;
 };
 
 Client.prototype.disconnect = function disconnect() {
+    debug("disconnect")
     this.fd.disconnect();
     return this;
 };
 
 Client.prototype.attach = function attach(opts) {
+    debug('attach', opts);
     var that = this;
     var conn = this.cids[opts.cid] = opts.connection;
     conn.on('call', function (method) {
@@ -73,6 +78,7 @@ Client.prototype.attach = function attach(opts) {
 };
 
 Client.prototype.detach = function detach(opts) {
+    debug('detach', opts);
     if (!this.cids[opts.cid]) return;
     this.cids[opts.cid].removeAllListeners();
     delete this.cids[opts.cid];
