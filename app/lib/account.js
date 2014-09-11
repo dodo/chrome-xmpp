@@ -66,6 +66,7 @@ Client.prototype.attach = function attach(opts) {
         that.fd.on(event, conn.send.bind(conn, event));
     });
     if (this.connected) process.nextTick(function () {
+        conn.send('connect', opts.jid);
         conn.send('online');
     });
     return this;
