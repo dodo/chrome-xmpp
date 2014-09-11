@@ -7,7 +7,8 @@ var isArray = Array.isArray;
 var __slice = Array.prototype.slice;
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
-var Element = require('ltx/lib/element').Element;
+var xmpp = new (require('lightstream/backend/node-xmpp'));
+var Element = xmpp.Element;
 var Connection = require('../../lib/connection');
 var Account = require('./account');
 
