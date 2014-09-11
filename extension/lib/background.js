@@ -144,10 +144,13 @@ Client.EVENTS = ['call','listen'];
 
 util.inherits(Client, Connection);
 function Client(port) {
+    this.allowed = false;
     Connection.call(this, {
         target:core.source,
         id:port.name,
     }).listen(port);
+    this.onDisconnect('source', this.close);
+    this.onDisconnect('target', this.close);
     port.name = this.id;
     this.setupListeners();
 }
@@ -155,7 +158,8 @@ function Client(port) {
 Client.prototype.setupListeners = function setupListeners() {
     this.on('request permission', this.request_permission.bind(this));
     this.on( 'remove permission', this.remove_permission.bind(this));
-    this.on('disconnect', this.detach.bind(this));
+    this.on('disconnect', this.disconnect.bind(this));
+    this.on('connect', this.connect.bind(this));
     // proxy in both directions
     core.on('proxy', this._onproxy = this.onProxy.bind(this));
     Client.EVENTS.forEach(function (event) {
@@ -168,39 +172,51 @@ Client.prototype.removeAllListeners = function removeAllListeners() {
     core.removeListener('proxy', this._onproxy);
 };
 
+Client.prototype.connect = function connect() {
+    if (this.allowed) this.getAttachOptions(this.aid, function (opts) {
+        this.send('connect', opts);
+    }.bind(this));
+    else this.sendToTarget('error', 'access denied');
+};
+
 Client.prototype.disconnect = function disconnect() {
+    if (this.allowed) this.send('disconnect', {id:this.aid});
+    else this.sendToTarget('error', 'access denied');
+};
+
+Client.prototype.close = function close() {
     if (this.source)
         this.source.disconnect();
+    this.detach();
     this.removeAllListeners();
     delete pool[this.id];
     removeTab(this.aid);
-}
+};
 
 Client.prototype.allow = function allow(accountid) {
+    this.allowed = true;
     this.sendToTarget('allow', 'allowed');
     this.attach(accountid);
 };
 
 Client.prototype.deny = function deny() {
+    this.allowed = false;
     this.sendToTarget('error', 'access denied');
+    this.close();
 };
 
-Client.prototype.getAttachOptions = function attach(aid, done) {
+Client.prototype.getAttachOptions = function (aid, done) {
     attachOptions(aid, function (opts) {
-        removeTab(this.aid);
         this.aid = opts.id;
-        tabs[this.aid] = {
-            id:this.source.sender.tab.id,
-            resource:opts.resource,
-            jid:opts.jid,
-        };
-        updateTab(this.aid, {connected:false});
         if (done) done(opts);
     }.bind(this));
 };
 
-Client.prototype.attach = function (accountid) {
-    this.getAttachOptions(accountid, this.send.bind(this, 'attach'));
+Client.prototype.attach = function attach(accountid) {
+    this.getAttachOptions(accountid, function (opts) {
+        this.tab = createTab(opts, this.source.sender.tab.id);
+        this.send('attach', opts);
+    }.bind(this));
 }
 
 Client.prototype.detach = function detach() {
@@ -208,6 +224,8 @@ Client.prototype.detach = function detach() {
 };
 
 Client.prototype.request_permission = function request_permission() {
+    if (this.allowed)
+        return this.connect();
     chrome.infobars.show({
         path: "infobar.html#"+this.id,
         tabId: this.source.sender.tab.id,

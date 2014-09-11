@@ -47,6 +47,10 @@ proto.remove     = function () {
     return this.send('remove permission');
 };
 
+proto.detach = function () {
+    return this.send('detach');
+};
+
 //------------------------------------------------------------------------------
 
 window.testXMPP = function () {
