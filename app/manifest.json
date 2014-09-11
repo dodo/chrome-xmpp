@@ -9,6 +9,6 @@
       "persistent": true
    }
  },
- "permissions": [ "notifications", {"socket": ["tcp-connect:*"]} ],
+ "permissions": [ {"socket": ["tcp-connect:*", "udp-send-to", "udp-bind"]} ],
  "icons": { "16": "favicon.png",  "64": "icon.png" }
 }
