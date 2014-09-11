@@ -5,7 +5,7 @@ module.exports = (grunt) ->
         browserify:
             app:
                 files:
-                    'app/background.js': ['app/app.js']
+                    'app/background.js': ['app/src/background.js']
                 options:
                     alias:( "#{src}:#{tgt}" for tgt, src of require('sawrocket-xmpp/package').browser)
             extension:
