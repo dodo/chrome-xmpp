@@ -15,7 +15,7 @@ module.exports = (grunt) ->
                     'extension/db.js': ['extension/src/db.js']
             addon:
                 files:
-                    'addon/background.js': ['addon/lib/background.js']
+                    'addon/background.js': ['addon/src/background.js']
 
     grunt.loadNpmTasks 'grunt-browserify'
 
