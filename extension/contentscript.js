@@ -9,9 +9,12 @@ var pool = {};
 var script = document.createElement('script');
 script.setAttribute('type', "text/javascript");
 script.setAttribute('src', chrome.extension.getURL("injectxmpp.js"));
-document.addEventListener('DOMContentLoaded', function () {
-    document.body.appendChild(script);
-});
+script.onload = function () {
+    var ev = new Event('XMPPLoaded');
+    document.dispatchEvent(ev);
+}
+document.lastChild.appendChild(script); // append it somewheere around <html>
+
 
 window.addEventListener('message', function (ev) {
     if (ev.source !== window) return;
