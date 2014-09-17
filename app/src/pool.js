@@ -207,11 +207,9 @@ function mapObject(obj, fun) {
 }
 
 function jsonify(arg) {
-    return (arg instanceof Element) ? {
-        name:arg.name,
-        attrs:arg.attrs,
-        children:__slice.call(arg.children || []).map(jsonify),
-    } : (arg instanceof Error) ? (
+    return (arg && arg.toJSON) ? (
+        arg.toJSON()
+    ) : (arg instanceof Error) ? (
         arg.stack || arg.message
     ) : (arg instanceof JID) ? (
         arg.toString()
