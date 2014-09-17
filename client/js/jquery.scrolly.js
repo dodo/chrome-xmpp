@@ -5,7 +5,7 @@ jQuery.fn.scrolly = function() {
     t.click(function(e) {
         var h = jQuery(this).attr('href'), target;
 
-        if (h.charAt(0) == '#' && h.length > 1 && (target = jQuery(''+h)).length > 0)
+        if (h.charAt(0) == '#' && h.length > 1 && (target = jQuery('[id="'+h.substring(1)+'"]')).length > 0)
         {
             var pos = Math.max(target.offset().top, 0);
             e.preventDefault();

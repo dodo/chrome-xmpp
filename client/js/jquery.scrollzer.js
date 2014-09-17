@@ -21,8 +21,8 @@ jQuery.scrollzer = function(ids, userSettings) {
         // Build elements array
             for (k in ids)
             {
-                o = jQuery('#' + ids[k]);
-                l = jQuery('#' + ids[k] + settings.suffix);
+                o = jQuery('[id="' + ids[k] + '"]');
+                l = jQuery('[id="' + ids[k] + settings.suffix + '"]');
 
                 if (o.length < 1
                 ||  l.length < 1)
