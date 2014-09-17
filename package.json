@@ -8,15 +8,16 @@
   "dependencies": {
     "JSONSelect": "~0.4.0",
     "domevents": "~0.2.0",
-    "node-xmpp-core": "*",
-    "node-xmpp-client": "*",
-    "sawrocket-xmpp": "~0.2.0",
-    "lightstream": "git+https://github.com/dodo/lightstream.git"
+    "node-xmpp-core": "~1.0.0",
+    "node-xmpp-client": "~1.0.0",
+    "sawrocket-xmpp": "~0.3.0",
+    "lightstream": "~0.4.0"
   },
   "devDependencies": {
-    "grunt": "~0.4.1",
     "mine": "git+https://github.com/shuhei/mine.git#regexp",
-    "browserify": "~3.30.2",
-    "grunt-browserify": "~1.3.1"
+    "grunt": "~0.4.1",
+    "grunt-exec": "~0.4.1",
+    "grunt-browserify": "~1.3.1",
+    "browserify": "~3.30.2"
   }
 }
