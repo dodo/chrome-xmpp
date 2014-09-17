@@ -97,6 +97,7 @@ window.testXMPP = function () {
         // Swap addresses...
         stanza.attrs.to = stanza.attrs.from;
         delete stanza.attrs.from;
+        delete stanza.attrs.id;
         // and send back.
         setTimeout(function () {
             client.call('message.send', stanza.attrs);
