@@ -16,13 +16,18 @@ module.exports = (grunt) ->
                 files:
                     'app/background.js': ['app/src/background.js']
                 options:
+                    debug:grunt.cli.options.debug
                     alias:( "#{src}:#{tgt}" for tgt, src of require('sawrocket-xmpp/package').browser)
             extension:
+                options:
+                    debug:grunt.cli.options.debug
                 files:
                     'extension/background.js': ['extension/src/background.js']
                     'extension/injectxmpp.js': ['extension/src/injectxmpp.js']
                     'extension/db.js': ['extension/src/db.js']
             addon:
+                options:
+                    debug:grunt.cli.options.debug
                 files:
                     'addon/background.js': ['addon/src/background.js']
 
