@@ -1,6 +1,6 @@
 {
   "name": "chrome-xmpp",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "xmpp connection on chrome sockets",
   "main": "",
   "author": "",
