@@ -82,7 +82,7 @@
 
 	#logo
 	{
-		margin: 1.5em 1.25em 1.25em 1.25em;
+		margin: 1.5em 1.25em 0.5em 1.25em;
 	}
 
 	#nav
@@ -172,7 +172,7 @@
 				position: absolute;
 				left: 0.5em;
 				top: 0.5em;
-				display: block;
+				display: inline-block;
 				width: 3.25em;
 				height: 2.25em;
 				line-height: 2.25em;
