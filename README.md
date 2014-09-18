@@ -1,7 +1,7 @@
 chrome-xmpp
 ===========
 
-WIP
+*prototype*
 
 Add XMPP as Feature to your Browser.
 
