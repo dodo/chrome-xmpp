@@ -5,6 +5,12 @@ module.exports = (grunt) ->
         exec:
             install:
                 command: 'npm install .'
+            install_client:
+                cwd: 'client'
+                command: 'grunt install'
+            client:
+                cwd: 'client'
+                command: 'grunt'
         browserify:
             app:
                 files:
@@ -32,6 +38,9 @@ module.exports = (grunt) ->
     grunt.registerTask 'addon', [
         'browserify:addon'
     ]
+    grunt.registerTask 'client', [
+        'exec:client'
+    ]
     grunt.registerTask 'backend', [
         'app'
         'extension'
@@ -39,8 +48,10 @@ module.exports = (grunt) ->
     ]
     grunt.registerTask 'default', [
         'backend'
+        'client'
     ]
     grunt.registerTask 'install', [
         'exec:install'
+        'exec:install_client'
         'default'
     ]
