@@ -1,0 +1,25 @@
+{
+  "name": "chrome-xmpp-demo-client",
+  "version": "0.0.0",
+  "description": "xmpp connection on chrome sockets demo client",
+  "main": "",
+  "author": "",
+  "license": "AGPL",
+  "dependencies": {
+    "lightstream": "git+https://github.com/dodo/lightstream.git"
+  },
+  "devDependencies": {
+    "async": "~0.9.0",
+    "dt-list": "~0.1.4",
+    "dt-jquery": "~0.4.0",
+    "dt-binding": "~0.2.0",
+    "dt-compiler": "~0.2.0",
+    "dynamictemplate": "~0.7.1",
+    "JSONSelect": "~0.4.0",
+    "grunt": "~0.4.1",
+    "grunt-exec": "~0.4.1",
+    "mine": "git+https://github.com/shuhei/mine.git#regexp",
+    "browserify": "~3.30.2",
+    "grunt-browserify": "~1.3.1"
+  }
+}
