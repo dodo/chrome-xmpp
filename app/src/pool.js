@@ -3,6 +3,7 @@
  * to pipe events multiplexed by extension
  * to different eventemitters in each account.
  */
+require('error-tojson'); // i know, it's evil, but … meh
 var isArray = Array.isArray;
 var __slice = Array.prototype.slice;
 var util = require('util');
@@ -209,8 +210,6 @@ function mapObject(obj, fun) {
 function jsonify(arg) {
     return (arg && arg.toJSON) ? (
         arg.toJSON()
-    ) : (arg instanceof Error) ? (
-        arg.stack || arg.message
     ) : (arg instanceof JID) ? (
         arg.toString()
     ) : isArray(arg) ? (
