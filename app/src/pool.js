@@ -209,7 +209,7 @@ function mapObject(obj, fun) {
 
 function jsonify(arg) {
     return (arg && arg.toJSON) ? (
-        arg.toJSON()
+        mapObject(arg.toJSON(), jsonify) // just to be sure
     ) : (arg instanceof JID) ? (
         arg.toString()
     ) : isArray(arg) ? (
