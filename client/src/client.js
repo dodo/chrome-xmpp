@@ -133,21 +133,7 @@ function toggleIsBuddy(that, buddy) {
 // -----------------------------------------------------------------------------
 
 
-function Application() {
-    this.client = new window.XMPP();
-    this.cid = this.client.id;
-    View.call(this, {
-        account: {
-            avatar:"",
-            jid: {bare:"", resource:""},
-            status: {text:""},
-        },
-        client: {status: "offline"},
-        roster: [],
-        chats: [],
-    });
-    this.listen();
-}
+function Application() {}
 util.inherits(Application, View);
 var proto = Application.prototype;
 
@@ -175,7 +161,7 @@ proto.events = {
             setTimeout(showChat.bind(0,jid), 200); // FIXME timeout
         }
     },
-    'input #search > input[type="search"]': function (ev) {
+    'input #search input[type="search"]': function (ev) {
         var filter = ""+ev.target.value;
         var needsort = false;
         try {new RegExp(filter,'gi')} catch(e) {return};
@@ -186,7 +172,7 @@ proto.events = {
         });
         if (needsort) this.sortRoster();
     },
-    'keyup #search > input[type="search"]': function (ev) {
+    'keyup #search input[type="search"]': function (ev) {
         if (ev.keyCode == 13) {
             var value = (/@/g.test(ev.target.value)) ?
                 {jid:parseJid(ev.target.value), status: {text:""}} :
@@ -227,6 +213,32 @@ proto.events = {
             });
         }
     },
+};
+proto.initialize = function () {
+    if (this.initialized) {
+        this.el && this.el.remove();
+        this.render();
+        return this;
+    }
+    this.initialized = true;
+    if (window.XMPP) {
+        this.client = new window.XMPP();
+        this.cid = this.client.id;
+    }
+    View.call(this, {
+        account: {
+            avatar:"",
+            jid: {bare:"", resource:""},
+            status: {text:""},
+        },
+        client: {status: this.client ? "offline" : "install"},
+        roster: [],
+        chats: [],
+    });
+    if (this.client)
+        this.listen();
+    this.render();
+    return this;
 };
 
 proto.sortRoster = function (exec) {
@@ -453,16 +465,21 @@ proto.listen = function () {
         console.warn("got message", msg)
         if (msg.text) that.addMessageEntry(msg);
     });
+    return this;
 };
 
 // -----------------------------------------------------------------------------
 
 function main() {
     (function($) {
-    $(document).on('XMPPLoaded', function () {
         window.app = new Application();
-        window.app.render();
-    });
+        var fail = setTimeout(function () {
+            window.app.initialize();
+        }, 2e3);
+        $(document).on('XMPPLoaded', function () {
+            clearTimeout(fail);
+            window.app.initialize();
+        });
     })(jQuery);
 }
 

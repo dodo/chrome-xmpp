@@ -113,11 +113,16 @@ module.exports = require('./mask/layout') (data) ->
                 if status is 'online'
                     removeClass this, 'offline'
                     addClass this, 'online'
-                else
+                else if status is 'offline'
                     removeClass this, 'online'
                     addClass this, 'offline'
+                else
+                    removeClass this, 'offline'
+                    removeClass this, 'online'
             ), -> @$div -> # container
                 @$header ->
+                    @$p id:'chrome-xmpp-missing', data.bind 'client.status', (status) ->
+                        removeClass this, 'hidden' if status is 'install'
                     @$p class:'status', compose show_when_online(data), ->
                         @$span class:'full jid', data.bind 'account.jid', (jid) ->
                             @text "#{jid.bare}/#{jid.resource}" if jid?
@@ -127,6 +132,7 @@ module.exports = require('./mask/layout') (data) ->
                 @$footer ->
                     @$a data.bind 'client.status', (status) ->
                         addClass this, 'button' # FIXME why?
+                        @attr('href', null) if status isnt 'install'
                         if status is 'online'
                             removeClass this, 'connect', 'disabled'
                             addClass this, 'disconnect'
@@ -135,10 +141,16 @@ module.exports = require('./mask/layout') (data) ->
                             removeClass this, 'connect', 'disconnect'
                             addClass this, 'disabled'
                             @text 'connecting …'
+                        else if status is 'install'
+                            removeClass this, 'connect', 'disconnect', 'disabled'
+                            addClass this, 'install'
+                            @text 'install …'
+                            @attr 'href', "http://dodo.github.io/chrome-xmpp/download.html"
                         else
                             removeClass this, 'disconnect', 'disabled'
                             addClass this, 'connect'
                             @text 'connect'
+
 
         ), data.repeat 'chats', MessageChat
 
