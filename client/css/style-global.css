@@ -1042,6 +1042,7 @@
     {
         border: solid;
         border-color: #333 transparent;
+        border-color: rgba(0,0,0,.8) transparent;
         border-width: 6px 6px 0 6px;
         bottom: 20px;
         content: "";
