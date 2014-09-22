@@ -111,14 +111,14 @@ module.exports = require('./mask/layout') (data) ->
         @$div id:'main', compose ( ->
             @$section id:'status', compose data.bind('client.status', (status) ->
                 if status is 'online'
-                    removeClass this, 'offline'
                     addClass this, 'online'
-                else if status is 'offline'
+                    removeClass this, 'offline'
+                else if status is 'install'
+                    removeClass this, 'offline'
+                    removeClass this, 'online'
+                else
                     removeClass this, 'online'
                     addClass this, 'offline'
-                else
-                    removeClass this, 'offline'
-                    removeClass this, 'online'
             ), -> @$div -> # container
                 @$header ->
                     @$p id:'chrome-xmpp-missing', data.bind 'client.status', (status) ->
