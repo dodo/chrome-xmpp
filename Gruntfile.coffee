@@ -1,3 +1,4 @@
+pemfile = 'chrome-xmpp.pem'
 module.exports = (grunt) ->
 
     grunt.initConfig
@@ -11,6 +12,12 @@ module.exports = (grunt) ->
             client:
                 cwd: 'client'
                 command: 'grunt'
+            pack_app:
+                command: "./crxmake ./app #{pemfile}"
+            pack_extension:
+                command: "./crxmake ./extension #{pemfile}"
+            pack_addon:
+                command: "./crxmake ./addon #{pemfile}"
         browserify:
             app:
                 files:
@@ -59,4 +66,10 @@ module.exports = (grunt) ->
         'exec:install'
         'exec:install_client'
         'default'
+    ]
+    grunt.registerTask 'pack', [
+        'backend'
+        'exec:pack_app'
+        'exec:pack_extension'
+        'exec:pack_addon'
     ]
