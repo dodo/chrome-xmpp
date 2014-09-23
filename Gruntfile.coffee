@@ -13,11 +13,11 @@ module.exports = (grunt) ->
                 cwd: 'client'
                 command: 'grunt'
             pack_app:
-                command: "./crxmake ./app #{pemfile}"
+                command: "./crxmake ./app chrome-xmpp-backend #{pemfile}"
             pack_extension:
-                command: "./crxmake ./extension #{pemfile}"
+                command: "./crxmake ./extension chrome-xmpp #{pemfile}"
             pack_addon:
-                command: "./crxmake ./addon #{pemfile}"
+                command: "./crxmake ./addon chrome-xmpp-page-status #{pemfile}"
         browserify:
             app:
                 files:
