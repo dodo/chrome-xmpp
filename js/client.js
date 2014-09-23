@@ -5786,7 +5786,7 @@ proto.initialize = function () {
         return this;
     }
     this.initialized = true;
-    if (window.XMPP) {
+    if (skel.vars.browser === 'chrome' && window.XMPP) {
         this.client = new window.XMPP();
         this.cid = this.client.id;
     }
@@ -5796,7 +5796,7 @@ proto.initialize = function () {
             jid: {bare:"", resource:""},
             status: {text:""},
         },
-        client: {status: this.client ? "offline" : "install"},
+        client: {status: this.client ? 'offline' : window.XMPP ? 'install' : 'nochrome' },
         roster: [],
         chats: [],
     });
@@ -6052,7 +6052,7 @@ function main() {
 main()
 
 },{"./template/layout.coffee":44,"JSONSelect":1,"dt-binding/list":5,"dt-jquery":13,"dt-list/adapter/jquery":24,"dynamictemplate/util":37,"util":42}],44:[function(require,module,exports){
-var MessageChat, RosterBuddy, STATUS, SUBSCRIPTION, Template, addClass, altText, compose, filterable, removeClass, show_when_online, update_status_code, when_isBuddy, _ref;
+var MessageChat, RosterBuddy, STATUS, SUBSCRIPTION, Template, addClass, altText, compose, filterable, removeClass, show_when_, show_when_online, update_status_code, when_isBuddy, _ref;
 
 Template = require('dynamictemplate').Template;
 
@@ -6095,14 +6095,18 @@ update_status_code = function(lookup, old_code) {
   };
 };
 
-show_when_online = function(data) {
+show_when_ = function(value, data) {
   return data.bind('client.status', function(status) {
-    if (status === 'online') {
+    if (status === value) {
       return removeClass(this, 'hidden');
     } else {
       return addClass(this, 'hidden');
     }
   });
+};
+
+show_when_online = function(data) {
+  return show_when_('online', data);
 };
 
 when_isBuddy = function(data, action) {
@@ -6255,7 +6259,7 @@ module.exports = require('./mask/layout')(function(data) {
         if (status === 'online') {
           addClass(this, 'online');
           return removeClass(this, 'offline');
-        } else if (status === 'install') {
+        } else if (status === 'install' || status === 'nochrome') {
           removeClass(this, 'offline');
           return removeClass(this, 'online');
         } else {
@@ -6267,11 +6271,10 @@ module.exports = require('./mask/layout')(function(data) {
           this.$header(function() {
             this.$p({
               id: 'chrome-xmpp-missing'
-            }, data.bind('client.status', function(status) {
-              if (status === 'install') {
-                return removeClass(this, 'hidden');
-              }
-            }));
+            }, data.bind('client.status', show_when_('install', data)));
+            this.$p({
+              id: 'no-chrome'
+            }, data.bind('client.status', show_when_('nochrome', data)));
             return this.$p({
               "class": 'status'
             }, compose(show_when_online(data), function() {
@@ -6305,6 +6308,9 @@ module.exports = require('./mask/layout')(function(data) {
                 removeClass(this, 'connect', 'disconnect');
                 addClass(this, 'disabled');
                 return this.text('connecting …');
+              } else if (status === 'nochrome') {
+                removeClass(this, 'connect', 'disconnect', 'disabled');
+                return addClass(this, 'hidden');
               } else if (status === 'install') {
                 removeClass(this, 'connect', 'disconnect', 'disabled');
                 addClass(this, 'install');
@@ -6580,6 +6586,16 @@ tree = [
                           " browser extension is need in order to run properly."
                         ]
                       }
+                    ]
+                  },
+                  {
+                    name: "p",
+                    attrs: {
+                      id: "no-chrome",
+                      class: "hidden"
+                    },
+                    children: [
+                      "Sorry, only chromium/chrome browsers supported at the moment."
                     ]
                   },
                   {
