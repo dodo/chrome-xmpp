@@ -221,7 +221,7 @@ proto.initialize = function () {
         return this;
     }
     this.initialized = true;
-    if (window.XMPP) {
+    if (skel.vars.browser === 'chrome' && window.XMPP) {
         this.client = new window.XMPP();
         this.cid = this.client.id;
     }
@@ -231,7 +231,7 @@ proto.initialize = function () {
             jid: {bare:"", resource:""},
             status: {text:""},
         },
-        client: {status: this.client ? "offline" : "install"},
+        client: {status: this.client ? 'offline' : window.XMPP ? 'install' : 'nochrome' },
         roster: [],
         chats: [],
     });

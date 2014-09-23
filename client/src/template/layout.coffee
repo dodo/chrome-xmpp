@@ -29,12 +29,15 @@ update_status_code = (lookup = STATUS, old_code = null) ->
         addClass this, "fa-#{lookup[code]}"
         old_code = code
 
-show_when_online = (data) ->
+show_when_ = (value, data) ->
     return data.bind 'client.status', (status) ->
-        if status is 'online'
+        if status is value
             removeClass this, 'hidden'
         else
             addClass this, 'hidden'
+
+show_when_online = (data) ->
+    return show_when_ 'online', data
 
 when_isBuddy = (data, action) ->
     counter = action is 'show' and addClass or removeClass
@@ -113,7 +116,7 @@ module.exports = require('./mask/layout') (data) ->
                 if status is 'online'
                     addClass this, 'online'
                     removeClass this, 'offline'
-                else if status is 'install'
+                else if status is 'install' or status is 'nochrome'
                     removeClass this, 'offline'
                     removeClass this, 'online'
                 else
@@ -121,8 +124,8 @@ module.exports = require('./mask/layout') (data) ->
                     addClass this, 'offline'
             ), -> @$div -> # container
                 @$header ->
-                    @$p id:'chrome-xmpp-missing', data.bind 'client.status', (status) ->
-                        removeClass this, 'hidden' if status is 'install'
+                    @$p id:'chrome-xmpp-missing', data.bind 'client.status', show_when_('install', data)
+                    @$p id:'no-chrome', data.bind 'client.status', show_when_('nochrome', data)
                     @$p class:'status', compose show_when_online(data), ->
                         @$span class:'full jid', data.bind 'account.jid', (jid) ->
                             @text "#{jid.bare}/#{jid.resource}" if jid?
@@ -141,6 +144,9 @@ module.exports = require('./mask/layout') (data) ->
                             removeClass this, 'connect', 'disconnect'
                             addClass this, 'disabled'
                             @text 'connecting …'
+                        else if status is 'nochrome'
+                            removeClass this, 'connect', 'disconnect', 'disabled'
+                            addClass this, 'hidden'
                         else if status is 'install'
                             removeClass this, 'connect', 'disconnect', 'disabled'
                             addClass this, 'install'
