@@ -5,6 +5,11 @@ chrome-xmpp
 
 Add XMPP as Feature to your Browser.
 
+[[Download](http://dodo.github.io/chrome-xmpp/download.html)]
+
+After install checkout the [demo](http://dodo.github.io/chrome-xmpp/).
+
+
 #### how should this work?
 
 * install app + extension + addon
