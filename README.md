@@ -38,6 +38,16 @@ git clone git://github.com/dodo/chrome-xmpp.git
 cd chrome-xmpp/
 grunt install
 ```
+or
+```bash
+mkdir chrome-xmpp && cd chrome-xmpp
+wget http://dodo.github.io/chrome-xmpp/chrome-xmpp-backend.zip
+wget http://dodo.github.io/chrome-xmpp/chrome-xmpp.zip
+wget http://dodo.github.io/chrome-xmpp/chrome-xmpp-page-status.zip
+unzip chrome-xmpp-backend.zip -d app
+unzip chrome-xmpp.zip -d extension
+unzip chrome-xmpp-page-status.zip -d addon
+```
 
 - Goto `Chrome/chromium menu` > `Settings` > `Extensions`.
 - Check `Developer mode` on.
