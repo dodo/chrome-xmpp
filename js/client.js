@@ -5796,7 +5796,13 @@ proto.initialize = function () {
             jid: {bare:"", resource:""},
             status: {text:""},
         },
-        client: {status: this.client ? 'offline' : window.XMPP ? 'install' : 'nochrome' },
+        client: {status:
+            this.client ?
+                'offline' :
+            skel.vars.browser === 'chrome' ?
+                'install' :
+                'nochrome'
+        },
         roster: [],
         chats: [],
     });
