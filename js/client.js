@@ -6461,7 +6461,31 @@ tree = [
                   {
                     name: "a",
                     attrs: {
-                      href: "#",
+                      href: "http://dodo.github.io/chrome-xmpp/download",
+                      class: "icon fa-download"
+                    },
+                    children: [
+                      {
+                        name: "span",
+                        attrs: {
+                          class: "label"
+                        },
+                        children: [
+                          "Download"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "li",
+                attrs: {},
+                children: [
+                  {
+                    name: "a",
+                    attrs: {
+                      href: "https://github.com/dodo/chrome-xmpp",
                       class: "icon fa-github"
                     },
                     children: [
@@ -6485,7 +6509,7 @@ tree = [
                   {
                     name: "a",
                     attrs: {
-                      href: "#",
+                      href: "https://github.com/dodo",
                       class: "icon fa-envelope"
                     },
                     children: [
