@@ -1,4 +1,3 @@
-pemfile = 'chrome-xmpp.pem'
 module.exports = (grunt) ->
 
     grunt.initConfig
@@ -13,11 +12,11 @@ module.exports = (grunt) ->
                 cwd: 'client'
                 command: 'grunt'
             pack_app:
-                command: "./crxmake ./app chrome-xmpp-backend #{pemfile}"
+                command: "./crxmake ./app chrome-xmpp-backend"
             pack_extension:
-                command: "./crxmake ./extension chrome-xmpp #{pemfile}"
+                command: "./crxmake ./extension chrome-xmpp"
             pack_addon:
-                command: "./crxmake ./addon chrome-xmpp-page-status #{pemfile}"
+                command: "./crxmake ./addon chrome-xmpp-page-status"
         browserify:
             app:
                 files:
