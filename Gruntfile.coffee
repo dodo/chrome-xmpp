@@ -7,7 +7,7 @@ module.exports = (grunt) ->
                 command: 'npm install .'
             install_client:
                 cwd: 'client'
-                command: 'grunt install'
+                command: 'npm install grunt-browserify grunt-exec && grunt install'
             client:
                 cwd: 'client'
                 command: 'grunt'

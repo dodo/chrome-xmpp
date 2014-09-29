@@ -28,7 +28,6 @@ After install checkout the [demo](http://dodo.github.io/chrome-xmpp/).
 it's ready, when it's ready :)
 … or you start contributing and shorten your waiting time.
 
-
 #### how to check this out?
 
 Make sure you have [grunt](https://gruntjs.com/) installed.
@@ -36,6 +35,7 @@ Make sure you have [grunt](https://gruntjs.com/) installed.
 ```bash
 git clone git://github.com/dodo/chrome-xmpp.git
 cd chrome-xmpp/
+npm install grunt-browserify grunt-exec
 grunt install
 ```
 or
