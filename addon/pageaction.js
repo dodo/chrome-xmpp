@@ -49,7 +49,7 @@ function updateAccounts(res) {
 }
 
 function updateStatus(doc, res) {
-    var jid = doc.querySelector('.jid');
+    var address = doc.querySelector('address');
     var resource = doc.querySelector('.resource');
     var online = doc.querySelector('.online.status');
     var offline = doc.querySelector('.offline.status');
@@ -68,13 +68,12 @@ function updateStatus(doc, res) {
         online.classList.add('hidden');
     }
     if (res.jid) {
-        jid.textContent = res.jid;
-        if (res.resource)
-            resource.textContent = "/" + res.resource;
-        else
-            resource.textContent = "";
+        address.textContent = res.jid;
+        if (res.resource) {
+            address.textContent += "/" + res.resource;
+        }
     } else {
-        resource.textContent = "";
-        jid.textContent = "";
+        address.textContent = "";
     }
+    address.setAttribute('title', address.textContent);
 }

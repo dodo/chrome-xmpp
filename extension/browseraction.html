@@ -14,9 +14,14 @@
       button {
         font-size: 0.9em;
       }
+      section {
+        min-height: 1.8em;
+      }
       address {
         font-style: normal;
-        min-height: 1.8em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       #empty {
         min-height: 1.8em;
@@ -50,8 +55,7 @@
   </head>
   <body>
     <template id="account">
-      <address>
-        <span class="jid"></span><span class="resource"></span>
+      <section>
         <nav>
           <button class="hidden connect" data-account="">connect</button>
           <button class="hidden disconnect" data-account="">disconnect</button>
@@ -59,7 +63,8 @@
         </nav>
         <span class="hidden online status">online</span>
         <span class="hidden offline status">offline</span>
-      </address>
+        <address></address>
+      </section>
     </template>
     <main>
       <nav id="empty" class="hidden">

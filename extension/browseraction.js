@@ -45,20 +45,18 @@ function createAccount(account) {
 }
 
 function updateData(doc, account) {
-    var jid = doc.querySelector('.jid');
+    var address = doc.querySelector('address');
     var options = doc.querySelector('.options');
-    var resource = doc.querySelector('.resource');
     options.setAttribute('href', "options.html?" + account.id + "#browseraction");
     if (account['jid']) {
-        jid.textContent = account['jid'];
+        address.textContent = account['jid'];
+        if (account['resource']) {
+            address.textContent += "/" + account['resource'];
+        }
     } else {
-        jid.textContent = "no jid";
+        address.textContent = "no jid";
     }
-    if (account['jid'] && account['resource']) {
-        resource.textContent = "/" + account['resource'];
-    } else {
-        resource.textContent = "";
-    }
+    address.setAttribute('title', address.textContent);
 }
 
 function updateStatus(doc, account, res) {
